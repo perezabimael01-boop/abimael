@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Final Notice Generator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
   :root{
     --blue:#1f8fe0;
@@ -129,7 +130,9 @@
   .mail-body{padding:26px 34px 34px;}
   .mail-subject{
     font-size:19px;font-weight:700;color:var(--ink);
-    margin:0 0 18px;
+    margin:0 0 16px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
   }
   .mail-meta{
     display:flex;justify-content:space-between;align-items:baseline;
@@ -323,8 +326,8 @@
     </div>
 
     <div class="print-chrome print-chrome-bottom">
-      <span class="chrome-date" id="chromeDateBottom"></span>
-      <span class="chrome-title" id="chromeTitleBottom"></span>
+      <span></span>
+      <span></span>
       <span class="page-num" id="pageNumBottom">1/1</span>
     </div>
 
@@ -437,8 +440,6 @@ function generateNotice(){
   const chromeDate = fmtShortDateTime(dateSent);
   document.getElementById('chromeDate').textContent = chromeDate;
   document.getElementById('chromeTitle').textContent = chromeTitle;
-  document.getElementById('chromeDateBottom').textContent = chromeDate;
-  document.getElementById('chromeTitleBottom').textContent = chromeTitle;
 
   document.getElementById('outParticipant').textContent = sender.participant;
   document.getElementById('outFromName').textContent = sender.fromName;
@@ -473,6 +474,7 @@ function backToSetup(){
 
 const LOGO_RATIOS = { suave: 100 / 300, mycomputer: 161 / 512 };
 const GMAIL_LOGO_RATIO = 80 / 218;
+const SUAVE_TEMPLATE_PDF_B64 = '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';
 
 function buildStyledWords(runs){
   const tokens = [];
@@ -552,6 +554,275 @@ function drawChromeBar(pdf, pageWidth, margin, y, date, title, pageNum){
   if(pageNum) pdf.text(pageNum, pageWidth - margin, y, { align: 'right' });
 }
 
+function base64ToUint8Array(base64){
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function downloadBytesAsFile(bytes, filename, mime){
+  const blob = new Blob([bytes], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function drawParagraphLib(page, runs, x, yTop, maxWidth, lineHeight, size, fonts, baseColor){
+  const tokens = buildStyledWords(runs);
+  const spaceWidth = fonts.normal.widthOfTextAtSize(' ', size);
+  let cursorX = x, cursorY = yTop;
+  tokens.forEach(tok => {
+    const st = tok.style || {};
+    let font = fonts.normal;
+    if(st.bold && st.italic) font = fonts.bolditalic;
+    else if(st.bold) font = fonts.bold;
+    const w = font.widthOfTextAtSize(tok.text, size);
+    if(tok.spaceBefore){
+      if(cursorX > x && cursorX + spaceWidth + w > x + maxWidth){
+        cursorY -= lineHeight;
+        cursorX = x;
+      } else {
+        cursorX += spaceWidth;
+      }
+    }
+    page.drawText(tok.text, { x: cursorX, y: cursorY, size, font, color: baseColor });
+    if(st.underline){
+      page.drawLine({ start: { x: cursorX, y: cursorY - 1.6 }, end: { x: cursorX + w, y: cursorY - 1.6 }, thickness: 0.6, color: baseColor });
+    }
+    cursorX += w;
+  });
+}
+
+// Edits the real uploaded Suave notice PDF: blanks out only the fields that
+// change (dates, name, amount, etc.) and redraws them in place, so every
+// static element (logo, headline, dividers, footer) is the untouched original.
+async function downloadSuaveTemplatePDF(data){
+  const { custName, custEmail, amountRaw, daysPastDue, deadlineDays, dateSent, escalationDate } = data;
+  const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+  const pdfDoc = await PDFDocument.load(base64ToUint8Array(SUAVE_TEMPLATE_PDF_B64));
+  const page = pdfDoc.getPages()[0];
+  const pageHeight = page.getHeight();
+
+  const helv = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helvBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helvBoldOblique = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
+  const fonts = { normal: helv, bold: helvBold, bolditalic: helvBoldOblique };
+
+  const BLACK = rgb(0, 0, 0);
+  const WHITE = rgb(1, 1, 1);
+  const toY = topY => pageHeight - topY;
+
+  function blank(x0, yTopTop, x1, yTopBottom){
+    page.drawRectangle({ x: x0, y: toY(yTopBottom), width: x1 - x0, height: yTopBottom - yTopTop, color: WHITE });
+  }
+
+  // 1) running header date (top-left)
+  {
+    const text = fmtShortDateTime(dateSent);
+    const size = 8.0;
+    const w = helv.widthOfTextAtSize(text, size);
+    blank(27.5, 14.4, Math.max(89.43, 28.5 + w + 3), 23.9);
+    page.drawText(text, { x: 28.5, y: toY(21.157), size, font: helv, color: BLACK });
+  }
+
+  // 2) meta date, right-aligned next to "Suave <support@paywithsuave.com>"
+  {
+    const text = fmtLongDateTime(dateSent);
+    const size = 9.8;
+    const w = helv.widthOfTextAtSize(text, size);
+    const rightEdge = 567.45;
+    blank(Math.min(400, rightEdge - w - 3), 110.6, rightEdge + 2, 122.3);
+    page.drawText(text, { x: rightEdge - w, y: toY(118.946), size, font: helv, color: BLACK });
+  }
+
+  // 3) To: line
+  {
+    const text = `To: ${custName} <${custEmail}>`;
+    blank(27.5, 122.0, 480, 133.7);
+    page.drawText(text, { x: 28.5, y: toY(130.393), size: 9.8, font: helv, color: BLACK });
+  }
+
+  // 4) "Dear NAME," line
+  {
+    const text = `Dear ${custName},`;
+    blank(50, 238.7, 500, 250.4);
+    page.drawText(text, { x: 51, y: toY(247.037), size: 9.8, font: helv, color: BLACK });
+  }
+
+  // 5) balance / past-due paragraph
+  blank(50, 260.0, 545, 283.0);
+  drawParagraphLib(page, [
+    { text: 'We regret to inform you that we have not yet received payment for your outstanding balance of ' },
+    { text: `FL ${fmtMoney(amountRaw)}`, bold: true },
+    { text: ', which is now ' },
+    { text: `${daysPastDue} past due`, bold: true },
+    { text: '.' }
+  ], 51, toY(268.234), 489, 11.447, 9.8, fonts, BLACK);
+
+  // 6) final-notice / escalation paragraph
+  blank(50, 292.6, 545, 327.2);
+  drawParagraphLib(page, [
+    { text: 'This is your ', underline: true },
+    { text: 'final notice', bold: true, underline: true },
+    { text: ', and we kindly urge you to take immediate action. If payment is not received within the next ' },
+    { text: `${deadlineDays} days`, bold: true },
+    { text: '\u2014before ' },
+    { text: fmtISODate(escalationDate), bold: true },
+    { text: '\u2014we will have no choice but to escalate your account to a ' },
+    { text: 'Deurwaarde (collection agency)', bold: true, italic: true, underline: true },
+    { text: '.', bold: true }
+  ], 51, toY(300.877), 489, 11.447, 9.8, fonts, BLACK);
+
+  const outBytes = await pdfDoc.save();
+  const customer = (custName || 'notice').trim().replace(/[^a-z0-9]+/gi, '_');
+  downloadBytesAsFile(outBytes, `Final-Notice-${customer}.pdf`, 'application/pdf');
+}
+
+// Fallback for senders without an uploaded reference PDF (e.g. My Computer):
+// draws the whole notice from scratch with jsPDF.
+async function downloadNativePDF(data){
+  const { sender, custName, custEmail, amountRaw, daysPastDue, deadlineDays,
+          dateSent, escalationDate, subject, chromeDate, chromeTitle } = data;
+
+  const INK = [26, 26, 26];
+  const MUTED = [95, 99, 104];
+  const LINE = [223, 228, 232];
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'pt', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 42;
+  const contentWidth = pageWidth - margin * 2;
+
+  // ---- running header ----
+  drawChromeBar(pdf, pageWidth, margin, 30, chromeDate, chromeTitle, null);
+
+  let y = 60;
+
+  // ---- Gmail brand row ----
+  const gmailH = 15;
+  const gmailW = gmailH / GMAIL_LOGO_RATIO;
+  pdf.addImage(GMAIL_LOGO, 'PNG', margin, y - gmailH + 3, gmailW, gmailH);
+
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  pdf.text(sender.participant, pageWidth - margin, y, { align: 'right' });
+
+  y += 14;
+  pdf.setDrawColor(LINE[0], LINE[1], LINE[2]);
+  pdf.setLineWidth(1);
+  pdf.line(margin, y, pageWidth - margin, y);
+
+  // ---- headline ----
+  y += 28;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(16);
+  pdf.setTextColor(INK[0], INK[1], INK[2]);
+  pdf.text(subject, margin, y);
+
+  // ---- second divider, directly below the headline ----
+  y += 14;
+  pdf.setDrawColor(LINE[0], LINE[1], LINE[2]);
+  pdf.setLineWidth(1);
+  pdf.line(margin, y, pageWidth - margin, y);
+
+  // ---- from / date ----
+  y += 24;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10.5);
+  pdf.setTextColor(INK[0], INK[1], INK[2]);
+  pdf.text(sender.fromName, margin, y);
+  const fromNameW = pdf.getTextWidth(sender.fromName);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  pdf.text(` <${sender.fromEmail}>`, margin + fromNameW, y);
+  pdf.text(fmtLongDateTime(dateSent), pageWidth - margin, y, { align: 'right' });
+
+  // ---- to / cc ----
+  y += 15;
+  pdf.setFontSize(9.5);
+  pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  pdf.text(`To: ${custName} <${custEmail}>`, margin, y);
+  y += 13;
+  pdf.text(`Cc: ${sender.ccName} <${sender.ccEmail}>`, margin, y);
+
+  // ---- sender logo, centered ----
+  y += 34;
+  const logoH = 42;
+  const logoW = logoH / LOGO_RATIOS[sender.key];
+  pdf.addImage(sender.logo, 'PNG', (pageWidth - logoW) / 2, y, logoW, logoH);
+  y += logoH + 30;
+
+  // ---- body paragraphs ----
+  const lineHeight = 14.5;
+  const bodySize = 10.5;
+
+  y = drawParagraph(pdf, [{ text: `Dear ${custName},` }], margin, y, contentWidth, lineHeight, bodySize, INK);
+  y += 10;
+
+  y = drawParagraph(pdf, [
+    { text: 'We regret to inform you that we have not yet received payment for your outstanding balance of ' },
+    { text: `FL ${fmtMoney(amountRaw)}`, bold: true },
+    { text: ', which is now ' },
+    { text: `${daysPastDue} past due`, bold: true },
+    { text: '.' }
+  ], margin, y, contentWidth, lineHeight, bodySize, INK);
+  y += 10;
+
+  y = drawParagraph(pdf, [
+    { text: 'This is your ', underline: true },
+    { text: 'final notice', bold: true, underline: true },
+    { text: ', and we kindly urge you to take immediate action. If payment is not received within the next ' },
+    { text: `${deadlineDays} days`, bold: true },
+    { text: '\u2014before ' },
+    { text: fmtISODate(escalationDate), bold: true },
+    { text: '\u2014we will have no choice but to escalate your account to a ' },
+    { text: 'Deurwaarde (collection agency)', bold: true, italic: true, underline: true },
+    { text: '.' }
+  ], margin, y, contentWidth, lineHeight, bodySize, INK);
+  y += 10;
+
+  y = drawParagraph(pdf, [
+    { text: 'We strongly encourage you to settle your outstanding amount as soon as possible to avoid further penalties. If you have already made the payment, please disregard this notice. Should you have any questions or require assistance, feel free to contact our support team.' }
+  ], margin, y, contentWidth, lineHeight, bodySize, INK);
+
+  // ---- divider ----
+  y += 18;
+  pdf.setDrawColor(LINE[0], LINE[1], LINE[2]);
+  pdf.setLineWidth(1);
+  pdf.line(margin, y, pageWidth - margin, y);
+
+  // ---- signature ----
+  y += 24;
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(bodySize);
+  pdf.setTextColor(INK[0], INK[1], INK[2]);
+  pdf.text('Regards,', margin, y);
+  y += 15;
+  pdf.text(`The ${sender.fromName} Team`, margin, y);
+  y += 15;
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(sender.domain, margin, y);
+
+  // ---- running footer: page number only, matching the real Gmail print output ----
+  const footerY = pageHeight - 30;
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  pdf.text('1/1', pageWidth - margin, footerY, { align: 'right' });
+
+  const customer = (custName || 'notice').trim().replace(/[^a-z0-9]+/gi, '_');
+  const outBytes = pdf.output('arraybuffer');
+  downloadBytesAsFile(new Uint8Array(outBytes), `Final-Notice-${customer}.pdf`, 'application/pdf');
+}
+
 async function downloadPDF(){
   const data = window.currentNoticeData;
   if(!data){
@@ -565,132 +836,11 @@ async function downloadPDF(){
   btn.disabled = true;
 
   try{
-    const { sender, custName, custEmail, amountRaw, daysPastDue, deadlineDays,
-            dateSent, escalationDate, subject, chromeDate, chromeTitle } = data;
-
-    const INK = [26, 26, 26];
-    const MUTED = [95, 99, 104];
-    const LINE = [223, 228, 232];
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 42;
-    const contentWidth = pageWidth - margin * 2;
-
-    // ---- running header ----
-    drawChromeBar(pdf, pageWidth, margin, 30, chromeDate, chromeTitle, null);
-
-    let y = 60;
-
-    // ---- Gmail brand row ----
-    const gmailH = 15;
-    const gmailW = gmailH / GMAIL_LOGO_RATIO;
-    pdf.addImage(GMAIL_LOGO, 'PNG', margin, y - gmailH + 3, gmailW, gmailH);
-
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10.5);
-    pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
-    pdf.text(sender.participant, pageWidth - margin, y, { align: 'right' });
-
-    y += 14;
-    pdf.setDrawColor(LINE[0], LINE[1], LINE[2]);
-    pdf.setLineWidth(1);
-    pdf.line(margin, y, pageWidth - margin, y);
-
-    // ---- headline ----
-    y += 28;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.setTextColor(INK[0], INK[1], INK[2]);
-    pdf.text(subject, margin, y);
-
-    // ---- from / date ----
-    y += 24;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(10.5);
-    pdf.setTextColor(INK[0], INK[1], INK[2]);
-    pdf.text(sender.fromName, margin, y);
-    const fromNameW = pdf.getTextWidth(sender.fromName);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
-    pdf.text(` <${sender.fromEmail}>`, margin + fromNameW, y);
-    pdf.text(fmtLongDateTime(dateSent), pageWidth - margin, y, { align: 'right' });
-
-    // ---- to / cc ----
-    y += 15;
-    pdf.setFontSize(9.5);
-    pdf.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
-    pdf.text(`To: ${custName} <${custEmail}>`, margin, y);
-    y += 13;
-    pdf.text(`Cc: ${sender.ccName} <${sender.ccEmail}>`, margin, y);
-
-    // ---- sender logo, centered ----
-    y += 34;
-    const logoH = 42;
-    const logoW = logoH / LOGO_RATIOS[sender.key];
-    pdf.addImage(sender.logo, 'PNG', (pageWidth - logoW) / 2, y, logoW, logoH);
-    y += logoH + 30;
-
-    // ---- body paragraphs ----
-    const lineHeight = 14.5;
-    const bodySize = 10.5;
-
-    y = drawParagraph(pdf, [{ text: `Dear ${custName},` }], margin, y, contentWidth, lineHeight, bodySize, INK);
-    y += 10;
-
-    y = drawParagraph(pdf, [
-      { text: 'We regret to inform you that we have not yet received payment for your outstanding balance of ' },
-      { text: `FL ${fmtMoney(amountRaw)}`, bold: true },
-      { text: ', which is now ' },
-      { text: `${daysPastDue} past due`, bold: true },
-      { text: '.' }
-    ], margin, y, contentWidth, lineHeight, bodySize, INK);
-    y += 10;
-
-    y = drawParagraph(pdf, [
-      { text: 'This is your ', underline: true },
-      { text: 'final notice', bold: true, underline: true },
-      { text: ', and we kindly urge you to take immediate action. If payment is not received within the next ' },
-      { text: `${deadlineDays} days`, bold: true },
-      { text: '\u2014before ' },
-      { text: fmtISODate(escalationDate), bold: true },
-      { text: '\u2014we will have no choice but to escalate your account to a ' },
-      { text: 'Deurwaarde (collection agency)', bold: true, italic: true, underline: true },
-      { text: '.' }
-    ], margin, y, contentWidth, lineHeight, bodySize, INK);
-    y += 10;
-
-    y = drawParagraph(pdf, [
-      { text: 'We strongly encourage you to settle your outstanding amount as soon as possible to avoid further penalties. If you have already made the payment, please disregard this notice. Should you have any questions or require assistance, feel free to contact our support team.' }
-    ], margin, y, contentWidth, lineHeight, bodySize, INK);
-
-    // ---- divider ----
-    y += 18;
-    pdf.setDrawColor(LINE[0], LINE[1], LINE[2]);
-    pdf.setLineWidth(1);
-    pdf.line(margin, y, pageWidth - margin, y);
-
-    // ---- signature ----
-    y += 24;
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(bodySize);
-    pdf.setTextColor(INK[0], INK[1], INK[2]);
-    pdf.text('Regards,', margin, y);
-    y += 15;
-    pdf.text(`The ${sender.fromName} Team`, margin, y);
-    y += 15;
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(sender.domain, margin, y);
-
-    // ---- running footer ----
-    const footerY = pageHeight - 30;
-    drawChromeBar(pdf, pageWidth, margin, footerY, chromeDate, chromeTitle, '1/1');
-
-    const customer = (custName || 'notice').trim().replace(/[^a-z0-9]+/gi, '_');
-    pdf.save(`Final-Notice-${customer}.pdf`);
-
+    if(data.sender.key === 'suave'){
+      await downloadSuaveTemplatePDF(data);
+    } else {
+      await downloadNativePDF(data);
+    }
     btn.textContent = originalLabel;
     btn.disabled = false;
   } catch(err){
