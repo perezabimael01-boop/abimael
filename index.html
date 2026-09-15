@@ -2,1051 +2,237 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Bevel tot Betaling</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wat wil je aanmaken?</title>
 <style>
-  :root {
-    --paper: #F3EEDE;      /* warm aged-paper page background */
-    --card: #FFFDF6;       /* panel surface, lifted slightly off the page */
-    --ink: #232A3B;        /* deep indigo-ink — headings, masthead, primary actions */
-    --ink-soft: #5B6178;   /* muted ink — secondary text, hints */
-    --line: #DED2AE;       /* hairline warm rule */
-    --accent: #96702A;     /* brass / old-gold — tab rules, focus, emphasis */
-    --accent-soft: #F1E7CE;
-    --danger: #7A2E2E;     /* oxblood — remove / delete actions */
-    --danger-soft: #F3E4E1;
+  :root{
+    --paper:#F3EEDE;
+    --card:#FFFDF6;
+    --ink:#232A3B;
+    --ink-soft:#5B6178;
+    --line:#DED2AE;
+    --gold:#96702A;
+    --gold-soft:#F1E7CE;
+    --blue:#1f6fa8;
+    --blue-soft:#E8F0F6;
+    --rust:#B0472E;
+    --rust-soft:#F6E6E1;
   }
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    margin: 0;
-    padding: 32px 20px 64px;
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -12%, rgba(150,112,42,0.08), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 105% 112%, rgba(31,111,168,0.07), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:70px 20px;
   }
-  .wrap { max-width: 860px; margin: 0 auto; }
+  .wrap{
+    max-width:760px;
+    width:100%;
+    animation:riseIn .55s ease-out;
+  }
+  @keyframes riseIn{
+    from{ opacity:0; transform:translateY(12px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
 
-  .masthead {
-    background: var(--ink);
-    color: #EFE9D8;
-    border-radius: 6px 6px 0 0;
-    padding: 28px 30px 22px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
+  .intro{ text-align:center; margin-bottom:20px; }
+  .intro h1{
+    font-family:Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-size:33px;
+    font-weight:700;
+    letter-spacing:0.1px;
+    margin:0 0 12px;
+    color:var(--ink);
   }
-  .masthead .seal {
-    flex: none;
-    width: 46px;
-    height: 46px;
+  .intro p{
+    font-size:14.5px;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:400px;
+    margin-left:auto;
+    margin-right:auto;
+    line-height:1.6;
   }
-  .masthead h1 {
-    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-    font-size: 23px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    margin: 0;
-  }
-  .masthead .sub {
-    color: #C9C2A6;
-    margin: 4px 0 0;
-    font-size: 13.5px;
-  }
-  .wrap > .card:first-of-type { border-top: none; }
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--accent);
-    border-radius: 0 0 4px 4px;
-    padding: 22px 26px;
-    margin-bottom: 16px;
+  .rule{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin:26px 0 46px;
   }
-  .card h2 {
-    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--ink);
-    margin: 0 0 16px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
+  .rule span{ height:1px; width:64px; background:var(--line); }
+  .rule i{
+    width:5px; height:5px;
+    border-radius:50%;
+    background:var(--gold);
+    transform:rotate(45deg);
+    display:inline-block;
   }
-  label {
-    display: block;
-    font-size: 12.5px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    margin-top: 12px;
-    color: var(--ink-soft);
+
+  .choices{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:30px 22px;
   }
-  label.first { margin-top: 0; }
-  input[type=text], input[type=number], input[type=date], select {
-    width: 100%;
-    padding: 9px 11px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    background: #fff;
-    color: var(--ink);
+  .choice{
+    display:flex;
+    flex-direction:column;
+    text-decoration:none;
+    color:inherit;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px 10px 10px 10px;
+    padding:34px 26px 24px;
+    position:relative;
+    margin-top:22px;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    box-shadow:0 1px 3px rgba(35,42,59,0.06);
   }
-  select { appearance: auto; }
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(150, 112, 42, 0.18);
+  .tab{
+    position:absolute;
+    top:-22px;
+    left:0;
+    height:30px;
+    padding:0 15px;
+    border-radius:6px 6px 0 0;
+    display:flex;
+    align-items:center;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.15px;
+    color:#FFFDF6;
+    box-shadow:0 -1px 0 rgba(0,0,0,0.04) inset;
   }
-  input[type=file] {
-    width: 100%;
-    padding: 9px 11px;
-    border: 1px dashed var(--line);
-    border-radius: 4px;
-    font-size: 13.5px;
-    font-family: inherit;
-    background: #fff;
+  .choice.claim .tab{ background:var(--gold); }
+  .choice.statement .tab{ background:var(--blue); }
+  .choice.notice .tab{ background:var(--rust); }
+
+  .choice:hover, .choice:focus-visible{
+    transform:translateY(-4px);
+    box-shadow:0 20px 36px -18px rgba(35,42,59,0.42);
+    outline:none;
   }
-  .c_invoice { font-family: "SF Mono", "Courier New", monospace; letter-spacing: 0.3px; }
-  .hint { font-size: 11.5px; color: var(--ink-soft); margin-top: 5px; line-height: 1.5; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .contract {
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 4px 4px 0;
-    padding: 14px 16px;
-    margin-top: 12px;
-    position: relative;
-    background: #FBF8EE;
+  .choice.claim:hover{ border-color:#C7AD7C; }
+  .choice.statement:hover{ border-color:#9DC1DD; }
+  .choice.notice:hover{ border-color:#DBA79A; }
+
+  .choice .icon{
+    width:44px; height:44px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%;
+    margin-bottom:18px;
   }
-  .contract .remove {
-    position: absolute; top: 10px; right: 12px;
-    background: none; border: none; color: var(--danger); font-size: 11.5px;
-    cursor: pointer; font-weight: 600; text-decoration: underline;
-    text-underline-offset: 2px;
+  .choice.claim .icon{ background:var(--gold-soft); }
+  .choice.statement .icon{ background:var(--blue-soft); }
+  .choice.notice .icon{ background:var(--rust-soft); }
+
+  .choice h2{
+    font-family:Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-size:20px;
+    font-weight:700;
+    margin:0 0 10px;
+    color:var(--ink);
+    line-height:1.3;
   }
-  .checkline { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-  .checkline input { width: auto; }
-  .checkline label { margin: 0; font-weight: 500; color: var(--ink); }
-  button {
-    font-family: inherit;
+  .choice p.desc{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.62;
+    margin:0;
+    flex:1;
   }
-  button.add {
-    margin-top: 14px;
-    background: #fff;
-    border: 1px solid var(--ink);
-    color: var(--ink);
-    padding: 8px 15px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color .12s ease;
+  .choice .go{
+    font-size:12.5px;
+    font-weight:700;
+    margin-top:22px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
   }
-  button.add:hover { background: var(--accent-soft); }
-  button.generate {
-    background: var(--ink);
-    color: #F3EEDE;
-    border: none;
-    padding: 13px 20px;
-    border-radius: 4px;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color .12s ease;
+  .choice.claim .go{ color:var(--gold); }
+  .choice.statement .go{ color:var(--blue); }
+  .choice.notice .go{ color:var(--rust); }
+  .choice .go svg{ transition:transform .18s ease; }
+  .choice:hover .go svg{ transform:translateX(3px); }
+
+  @media (max-width:860px){
+    .choices{ grid-template-columns:1fr 1fr; }
   }
-  button.generate:hover { background: #323B52; }
-  button.download {
-    margin-top: 12px;
-    background: #fff;
-    border: 1.5px solid var(--ink);
-    color: var(--ink);
-    padding: 11px 16px;
-    border-radius: 4px;
-    font-size: 13.5px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color .12s ease;
+  @media (max-width:620px){
+    .choices{ grid-template-columns:1fr; gap:28px; }
+    .intro h1{ font-size:26px; }
   }
-  button.download:hover { background: var(--accent-soft); }
-  #output {
-    display: none;
-    margin-top: 26px;
-    animation: revealPaper .35s ease-out;
-  }
-  @keyframes revealPaper {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  #docPreview {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 34px 40px;
-    font-family: "Times New Roman", Times, serif;
-    font-size: 12.5pt;
-    line-height: 1.55;
-    max-height: 560px;
-    overflow-y: auto;
-    box-shadow: 0 10px 28px -14px rgba(35, 42, 59, 0.35), 0 2px 6px rgba(35, 42, 59, 0.08);
-  }
-  #docPreview h1 { text-align: center; font-size: 13.5pt; letter-spacing: 1px; }
-  #docPreview p { text-align: justify; margin: 0 0 0.8em 0; }
-  #docPreview ol.paragrafen { padding-left: 1.3em; }
-  #docPreview ol.paragrafen > li { text-align: justify; margin-bottom: 0.7em; }
-  #docPreview ol.sub { list-style: none; padding-left: 1.2em; margin: 0.2em 0; }
-  #docPreview .petitum-kop { font-weight: bold; margin-top: 1.3em; }
-  #docPreview ul.doc-bullets {
-    list-style: none;
-    margin: 0.4em 0 0.9em 0;
-    padding: 0;
-  }
-  #docPreview ul.doc-bullets > li {
-    position: relative;
-    padding-left: 20px;
-    margin-bottom: 6px;
-    text-align: justify;
-  }
-  #docPreview ul.doc-bullets > li::before {
-    content: "•";
-    position: absolute;
-    left: 4px;
-    color: var(--accent);
-    font-weight: bold;
-  }
-  #docPreview ol.petitum > li { text-align: justify; margin-bottom: 0.7em; }
-  .error { color: var(--danger); font-size: 12.5px; margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="masthead">
-    <svg class="seal" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="24" cy="24" r="21.5" stroke="#C9A227" stroke-width="1.5"/>
-      <circle cx="24" cy="24" r="16.5" stroke="#C9A227" stroke-width="1"/>
-      <path d="M15 20L24 14L33 20V29C33 33 29 35.5 24 37C19 35.5 15 33 15 29V20Z" stroke="#EFE9D8" stroke-width="1.4" stroke-linejoin="round"/>
-      <path d="M20 24.5L23 27.5L28.5 21" stroke="#C9A227" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div>
-      <h1>Bevel tot Betaling</h1>
-      <p class="sub">Kies eerst de eiseres, vul dan de gegevens per zaak in.</p>
-    </div>
+  <div class="intro">
+    <h1>Wat wil je aanmaken?</h1>
+    <p>Kies een document om te beginnen — je komt direct in het bijbehorende formulier terecht.</p>
   </div>
 
-  <div class="card">
-    <h2>Customer Statement uploaden (optioneel)</h2>
-    <label class="first">PDF van My Suave (Customer Statement)</label>
-    <input type="file" id="pdfUpload" accept="application/pdf" onchange="handlePdfUpload(this)">
-    <div class="hint" id="pdfStatus">Vult automatisch naam, openstaand bedrag en de overeenkomsten (contract#, merchant, datum van M1) in — alles blijft daarna gewoon bewerkbaar.</div>
-  </div>
+  <div class="rule"><span></span><i></i><span></span></div>
 
-  <div class="card">
-    <h2>Eiseres</h2>
-    <label class="first">Eiseres</label>
-    <select id="eiseresPreset">
-      <option value="suave">Suave Solutions LLC (buitenlandse vennootschap, VS)</option>
-      <option value="mimi">Mimi Computer &amp; Business Products N.V. (Aruba)</option>
-    </select>
-    <div class="hint">Bepaalt de openingsalinea van het verzoekschrift (naam, rechtsvorm en vestigingsplaats van eiseres).</div>
-  </div>
-
-  <div class="card">
-    <h2>Gedaagde (debiteur)</h2>
-    <label class="first">Naam gedaagde</label>
-    <input type="text" id="naam_debiteur" placeholder="bijv. Juan Perez">
-
-    <div class="row">
-      <div>
-        <label>Land (woonplaats)</label>
-        <input type="text" id="land_debiteur" placeholder="bijv. Venezuela">
+  <div class="choices">
+    <a class="choice claim" href="bevel-tot-betaling.html">
+      <span class="tab">Verzoekschrift</span>
+      <div class="icon">
+        <svg width="21" height="21" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="24" cy="24" r="21.5" stroke="#96702A" stroke-width="2"/>
+          <path d="M15 20L24 14L33 20V29C33 33 29 35.5 24 37C19 35.5 15 33 15 29V20Z" stroke="#96702A" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M20 24.5L23 27.5L28.5 21" stroke="#96702A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
-      <div>
-        <label>Adres</label>
-        <input type="text" id="adres_debiteur" placeholder="bijv. Calle Falsa 123">
+      <h2>Bevel tot Betaling</h2>
+      <p class="desc">Verzoekschrift voor het Gerecht om een gedaagde te laten veroordelen tot betaling van een openstaande schuld, per zaak in te vullen.</p>
+      <span class="go">Formulier openen
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+
+    <a class="choice statement" href="customer-statement.html">
+      <span class="tab">Overzicht</span>
+      <div class="icon">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="3" width="16" height="18" rx="1.5" stroke="#1f6fa8" stroke-width="1.8"/>
+          <path d="M8 8H16M8 12H16M8 16H12.5" stroke="#1f6fa8" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
       </div>
-    </div>
+      <h2>Customer Statement</h2>
+      <p class="desc">Klantoverzicht met openstaand saldo, verlate betalingen en eventueel een boeterente van 15%, per contract opgebouwd.</p>
+      <span class="go">Formulier openen
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
 
-    <label>Geboortedatum gedaagde (optioneel — laat leeg voor [geboortedatum])</label>
-    <input type="date" id="geboortedatum_debiteur">
-
-    <label>Openstaand bedrag (Afl.)</label>
-    <input type="number" id="bedrag_hoofdsom" step="0.01" placeholder="bijv. 4707.48">
-    <div class="hint">Gebruik een punt voor de decimalen — de opmaak (Afl. 4.707,48) wordt automatisch gedaan.</div>
-
-    <label>Buitengerechtelijke incassokosten</label>
-    <input type="text" value="15% (vast percentage, wordt automatisch over het openstaand bedrag berekend)" disabled style="background:var(--paper); color:var(--ink-soft);">
-
-  </div>
-
-  <div class="card">
-    <h2>Kantoorgegevens (namens eiseres)</h2>
-    <label class="first">Kantoor</label>
-    <select id="kantoorPreset" onchange="applyKantoorPreset()">
-      <option value="custom">Aangepast (handmatig invullen)</option>
-      <option value="roos">Roos Gerechtsdeurwaarders en Incasso N.V. (automatisch invullen)</option>
-    </select>
-    <div class="row">
-      <div>
-        <label class="first">Kantooradres</label>
-        <input type="text" id="kantooradres" placeholder="bijv. Kantoorstraat 1">
+    <a class="choice notice" href="final-notice.html">
+      <span class="tab">Aanmaning</span>
+      <div class="icon">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 5.5C4 4.67 4.67 4 5.5 4H18.5C19.33 4 20 4.67 20 5.5V16.5C20 17.33 19.33 18 18.5 18H5.5C4.67 18 4 17.33 4 16.5V5.5Z" stroke="#B0472E" stroke-width="1.8"/>
+          <path d="M4.5 5.5L12 12L19.5 5.5" stroke="#B0472E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 20V22M9 21.5H15" stroke="#B0472E" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
       </div>
-      <div>
-        <label class="first">Kantoornaam</label>
-        <input type="text" id="kantoornaam" placeholder="bijv. Advocatenkantoor X">
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label>Kantoorstad</label>
-        <input type="text" id="kantoorstad" placeholder="bijv. Oranjestad">
-      </div>
-      <div>
-        <label>Kantoorland</label>
-        <input type="text" id="kantoorland" value="Aruba">
-      </div>
-    </div>
-    <label>Gemachtigde persoon</label>
-    <input type="text" id="gemachtigde" placeholder="bijv. Mr. J. Jansen">
-
-    <div class="row" style="margin-top:14px;">
-      <button class="add" type="button" onclick="showSaveKantoorRow()">+ Huidig kantoor opslaan</button>
-      <button class="add" type="button" id="deleteKantoorBtn" style="display:none; background:var(--danger-soft); border-color:var(--danger); color:var(--danger);" onclick="deleteSelectedKantoor()">Verwijderen</button>
-    </div>
-
-    <div id="saveKantoorRow" style="display:none; margin-top:12px;">
-      <label class="first">Naam voor dit kantoor (zoals het in de lijst verschijnt)</label>
-      <input type="text" id="newKantoorLabel" placeholder="bijv. Kantoor Jansen &amp; Partners">
-      <div class="row" style="margin-top:8px;">
-        <button class="add" type="button" onclick="confirmSaveKantoor()">Opslaan</button>
-        <button class="add" type="button" style="background:#fff;" onclick="cancelSaveKantoor()">Annuleren</button>
-      </div>
-      <div class="hint">Blijft bewaard in deze browser, ook na herladen — en kun je later weer verwijderen.</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Overeenkomsten / facturen</h2>
-    <div id="contracts"></div>
-    <button class="add" onclick="addContract()">+ Overeenkomst toevoegen</button>
-    <div class="hint" style="margin-top:10px;">
-      Als een overeenkomst <strong>in de fysieke winkel</strong> is gesloten, komt hij zowel in punt 2 (huurkoopovereenkomsten) als punt 3 (overname vordering) van het verzoekschrift. Is dat niet het geval, dan komt hij alleen in punt 2.
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Schuldbekentenis (optioneel)</h2>
-    <div class="checkline" style="margin-top:0;">
-      <input type="checkbox" id="heeft_schuldbekentenis" onchange="toggleSchuldbekentenis()">
-      <label for="heeft_schuldbekentenis">Gedaagde heeft een schuldbekentenis met afbetalingsregeling getekend</label>
-    </div>
-    <div id="schuldbekentenisFields" style="display:none; margin-top:10px;">
-      <div class="row">
-        <div>
-          <label class="first">Datum schuldbekentenis</label>
-          <input type="date" id="datum_schuldbekentenis">
-        </div>
-        <div>
-          <label class="first">Datum ingang maandelijkse termijnen</label>
-          <input type="date" id="datum_ingang_termijnen">
-        </div>
-      </div>
-      <label>Reeds betaald bedrag (Afl.)</label>
-      <input type="number" id="bedrag_betaald" step="0.01" placeholder="0.00 als nog niets is betaald">
-      <div class="hint">Vul 0 in (of laat leeg) als gedaagde nog niets heeft betaald — de tekst past zich daar automatisch op aan.</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Overige data</h2>
-    <div class="row">
-      <div>
-        <label class="first">Datum sommatie-exploot (optioneel — laat leeg voor [datum])</label>
-        <input type="date" id="datum_sommatie_exploot">
-      </div>
-      <div>
-        <label class="first">Datum sommatiebrief (optioneel — leeg = zin over sommatiebrief vervalt)</label>
-        <input type="date" id="datum_sommatiebrief">
-      </div>
-    </div>
-    <div class="row">
-      <div>
-        <label>Plaats van ondertekening</label>
-        <input type="text" id="ondertekening_land" value="Aruba">
-      </div>
-      <div>
-        <label>Datum van ondertekening</label>
-        <input type="date" id="ondertekening_datum">
-      </div>
-    </div>
-  </div>
-
-  <button class="generate" onclick="generate()">Genereer verzoekschrift</button>
-  <div class="error" id="errorBox"></div>
-
-  <div id="output">
-    <div id="docPreview"></div>
-    <button class="download" onclick="downloadDocx()">Download als Word-document (.docx)</button>
-    <button class="download" style="margin-top:8px;" onclick="downloadPdf()">Download als PDF</button>
+      <h2>Final Notice</h2>
+      <p class="desc">Laatste betalingsherinnering per e-mail, met automatische escalatiedatum, klaar om te printen of als PDF te bewaren.</p>
+      <span class="go">Formulier openen
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
   </div>
 </div>
-
-<script>
-const INCASSO_PERCENTAGE = 15; // vast percentage — pas hier aan indien nodig
-
-// Elke eiseres-preset levert een functie die, gegeven de kantoorgegevens, de openingsalinea (markdown) bouwt
-const EISERES_PRESETS = {
-  suave: (k) => `**De vennootschap naar buitenlands recht SUAVE SOLUTIONS LLC**, handelende onder de naam “**SUAVE SOLUTIONS LLC**”, gevestigd in de Verenigde Staten van Amerika, hierna “**eiseres**” genoemd, te dezer zake domicilie kiezende aan **${k.kantooradres}** te **${k.kantoorstad}** in **${k.kantoorland}**, ten kantore van **${k.kantoornaam}**, van welk kantoor **${k.gemachtigde}** verklaart door eiseres te zijn gemachtigd ten deze voor haar te occuperen, alsmede om dit verzoekschrift voor en namens haar te ondertekenen en in te dienen (prod. 1).`,
-  mimi: (k) => `**De naamloze vennootschap MIMI COMPUTER & BUSINESS PRODUCTS N.V.**, gevestigd te Oranjestad, Aruba, kantoorhoudende aan de Pedro Gallego Straat 4, hierna “**eiseres**” genoemd, te dezer zake domicilie kiezende aan **${k.kantooradres}** te **${k.kantoorstad}** in **${k.kantoorland}**, ten kantore van **${k.kantoornaam}**, van welk kantoor **${k.gemachtigde}** verklaart door eiseres te zijn gemachtigd ten deze voor haar te occuperen, alsmede om dit verzoekschrift voor en namens haar te ondertekenen en in te dienen (prod. 1).`
-};
-
-// TODO: vul de echte gegevens van Roosdeurwaarder hieronder in
-const KANTOOR_PRESETS = {
-  roos: {
-    kantooradres: 'Weststraat nr. 30',
-    kantoorstad: 'Oranjestad',
-    kantoorland: 'Aruba',
-    kantoornaam: 'Roos Gerechtsdeurwaarders en Incasso N.V.',
-    gemachtigde: 'dhr. Bernard R. Roos'
-  }
-};
-
-const KANTOOR_STORAGE_KEY = 'bevel_custom_kantoren_v1';
-const KANTOOR_FIELDS = ['kantooradres', 'kantoorstad', 'kantoorland', 'kantoornaam', 'gemachtigde'];
-
-function loadCustomKantoren() {
-  try {
-    const raw = localStorage.getItem(KANTOOR_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveCustomKantoren(list) {
-  try {
-    localStorage.setItem(KANTOOR_STORAGE_KEY, JSON.stringify(list));
-    return true;
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-}
-
-function renderKantoorOptions() {
-  const select = document.getElementById('kantoorPreset');
-  const current = select.value;
-  select.innerHTML = '';
-  const builtIn = [
-    { value: 'custom', label: 'Aangepast (handmatig invullen)' },
-    { value: 'roos', label: 'Roos Gerechtsdeurwaarders en Incasso N.V. (automatisch invullen)' }
-  ];
-  builtIn.forEach(o => {
-    const opt = document.createElement('option');
-    opt.value = o.value;
-    opt.textContent = o.label;
-    select.appendChild(opt);
-  });
-  loadCustomKantoren().forEach(k => {
-    const opt = document.createElement('option');
-    opt.value = 'custom-' + k.id;
-    opt.textContent = k.label + ' (opgeslagen)';
-    select.appendChild(opt);
-  });
-  if ([...select.options].some(o => o.value === current)) select.value = current;
-}
-
-function applyKantoorPreset() {
-  const preset = document.getElementById('kantoorPreset').value;
-  const deleteBtn = document.getElementById('deleteKantoorBtn');
-  cancelSaveKantoor();
-
-  if (preset === 'custom') {
-    KANTOOR_FIELDS.forEach(f => { document.getElementById(f).disabled = false; });
-    deleteBtn.style.display = 'none';
-    return;
-  }
-
-  let data = KANTOOR_PRESETS[preset];
-  if (!data && preset.startsWith('custom-')) {
-    const id = preset.slice('custom-'.length);
-    data = loadCustomKantoren().find(k => String(k.id) === id);
-  }
-  if (!data) return;
-
-  KANTOOR_FIELDS.forEach(f => {
-    const el = document.getElementById(f);
-    el.value = data[f];
-    el.disabled = true;
-  });
-  deleteBtn.style.display = preset.startsWith('custom-') ? 'inline-block' : 'none';
-  deleteBtn.textContent = 'Verwijderen';
-}
-
-function showSaveKantoorRow() {
-  for (const f of KANTOOR_FIELDS) {
-    if (!clean(document.getElementById(f).value)) {
-      alert('Vul eerst alle kantoorvelden in voordat je dit kantoor opslaat.');
-      return;
-    }
-  }
-  document.getElementById('newKantoorLabel').value = '';
-  document.getElementById('saveKantoorRow').style.display = 'block';
-}
-
-function cancelSaveKantoor() {
-  document.getElementById('saveKantoorRow').style.display = 'none';
-}
-
-function confirmSaveKantoor() {
-  const label = clean(document.getElementById('newKantoorLabel').value);
-  if (!label) {
-    alert('Geef dit kantoor een naam.');
-    return;
-  }
-  const values = {};
-  KANTOOR_FIELDS.forEach(f => { values[f] = clean(document.getElementById(f).value); });
-
-  const list = loadCustomKantoren();
-  const id = Date.now().toString(36);
-  list.push({ id, label, ...values });
-  const ok = saveCustomKantoren(list);
-
-  renderKantoorOptions();
-  cancelSaveKantoor();
-  document.getElementById('kantoorPreset').value = 'custom-' + id;
-  applyKantoorPreset();
-
-  if (!ok) {
-    alert('Kon dit kantoor niet blijvend opslaan in deze omgeving (browseropslag niet beschikbaar). Het is nu wel ingevuld, maar bij het openen van een nieuwe sessie moet je het opnieuw opslaan — download het bestand en open het rechtstreeks in je browser voor blijvende opslag.');
-  }
-}
-
-let deleteConfirmPending = false;
-function deleteSelectedKantoor() {
-  const btn = document.getElementById('deleteKantoorBtn');
-  const preset = document.getElementById('kantoorPreset').value;
-  if (!preset.startsWith('custom-')) return;
-
-  if (!deleteConfirmPending) {
-    deleteConfirmPending = true;
-    btn.textContent = 'Zeker weten? Klik nogmaals';
-    setTimeout(() => { deleteConfirmPending = false; btn.textContent = 'Verwijderen'; }, 3000);
-    return;
-  }
-  deleteConfirmPending = false;
-
-  const id = preset.slice('custom-'.length);
-  const list = loadCustomKantoren().filter(k => String(k.id) !== id);
-  saveCustomKantoren(list);
-  renderKantoorOptions();
-  document.getElementById('kantoorPreset').value = 'custom';
-  applyKantoorPreset();
-}
-
-const KANTOOR_LAST_KEY = 'bevel_last_kantoor_v1';
-
-// Auto-saves whatever is typed in "Aangepast" mode, debounced, so the fields
-// are remembered even without clicking "+ Huidig kantoor opslaan"
-let kantoorAutoSaveTimer = null;
-function autoSaveKantoorFields() {
-  if (document.getElementById('kantoorPreset').value !== 'custom') return;
-  clearTimeout(kantoorAutoSaveTimer);
-  kantoorAutoSaveTimer = setTimeout(() => {
-    const values = {};
-    KANTOOR_FIELDS.forEach(f => { values[f] = document.getElementById(f).value; });
-    try { localStorage.setItem(KANTOOR_LAST_KEY, JSON.stringify(values)); } catch (e) { /* ignore */ }
-  }, 300);
-}
-
-function restoreLastKantoorFields() {
-  try {
-    const raw = localStorage.getItem(KANTOOR_LAST_KEY);
-    if (!raw) return;
-    const values = JSON.parse(raw);
-    if (document.getElementById('kantoorPreset').value === 'custom') {
-      KANTOOR_FIELDS.forEach(f => {
-        if (values[f]) document.getElementById(f).value = values[f];
-      });
-    }
-  } catch (e) { /* ignore */ }
-}
-
-let contractCount = 0;
-
-function toggleSchuldbekentenis() {
-  const checked = document.getElementById('heeft_schuldbekentenis').checked;
-  document.getElementById('schuldbekentenisFields').style.display = checked ? 'block' : 'none';
-}
-
-function addContract() {
-  contractCount++;
-  const id = contractCount;
-  const div = document.createElement('div');
-  div.className = 'contract';
-  div.id = 'contract-' + id;
-  div.innerHTML = `
-    <button class="remove" onclick="document.getElementById('contract-${id}').remove()">verwijderen</button>
-    <div class="row">
-      <div>
-        <label class="first">Datum overeenkomst</label>
-        <input type="date" class="c_datum">
-      </div>
-      <div>
-        <label class="first">Invoice ID</label>
-        <input type="text" class="c_invoice" placeholder="bijv. MC122187">
-      </div>
-    </div>
-    <label class="first">Merchant (verkoper)</label>
-    <input type="text" class="c_merchant" placeholder="bijv. My Computer">
-    <div class="checkline">
-      <input type="checkbox" class="c_instore" id="instore-${id}">
-      <label for="instore-${id}">Gekocht in fysieke winkel</label>
-    </div>
-  `;
-  document.getElementById('contracts').appendChild(div);
-}
-addContract(); // start with one row
-renderKantoorOptions();
-restoreLastKantoorFields();
-KANTOOR_FIELDS.forEach(f => {
-  document.getElementById(f).addEventListener('input', autoSaveKantoorFields);
-});
-
-if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
-
-const PDF_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
-
-// "26-Jan-2025" -> "2025-01-26" (for an <input type="date">)
-function pdfDateToInputValue(str) {
-  const m = (str || '').match(/(\d{2})-([A-Za-z]{3})-(\d{4})/);
-  if (!m || !PDF_MONTHS[m[2]]) return '';
-  return `${m[3]}-${PDF_MONTHS[m[2]]}-${m[1]}`;
-}
-
-async function extractPdfText(file) {
-  const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map(it => it.str).join(' ') + '\n';
-  }
-  return text;
-}
-
-function parseCustomerStatement(text) {
-  // Currency label varies per statement (ANG, FL, Afl., ...) — match any short label before the amount
-  const balanceMatch = text.match(/Open Balance\s*:?\s*[A-Za-z.]{0,6}\s*([\d,]+\.\d{2})/i);
-  const openBalance = balanceMatch ? parseFloat(balanceMatch[1].replace(/,/g, '')) : null;
-
-  const nameMatch = text.match(/Account:\s*([^\n]+?)\s+Open Balance/i);
-  const naam = nameMatch ? nameMatch[1].trim() : null;
-
-  // Matches the first row of each contract group (always invoice "M1"): contract#, vendor (any name,
-  // including multi-word like "My Computer"), M1-date. Vendor names are letters/spaces/&.'- only, so
-  // they never swallow the "M1" that follows.
-  const contractRegex = /([A-Za-z]{2,}\d{3,})\s+([A-Za-z][A-Za-z&.'-]*(?:\s+[A-Za-z][A-Za-z&.'-]*)*)\s+M1\s+(\d{2}-[A-Za-z]{3}-\d{4})\s+Monthly Payment/g;
-  const contracts = [];
-  let m;
-  while ((m = contractRegex.exec(text)) !== null) {
-    contracts.push({ contract: m[1], vendor: m[2].trim(), date: m[3] });
-  }
-  return { openBalance, naam, contracts };
-}
-
-async function handlePdfUpload(input) {
-  const file = input.files[0];
-  const statusEl = document.getElementById('pdfStatus');
-  if (!file) return;
-  statusEl.textContent = 'Bezig met inlezen van de PDF…';
-  try {
-    const text = await extractPdfText(file);
-    const data = parseCustomerStatement(text);
-
-    if (data.naam) document.getElementById('naam_debiteur').value = data.naam;
-    if (data.openBalance != null) document.getElementById('bedrag_hoofdsom').value = data.openBalance.toFixed(2);
-
-    document.getElementById('contracts').innerHTML = '';
-    contractCount = 0;
-
-    if (data.contracts.length === 0) {
-      addContract();
-      statusEl.textContent = 'Geen contracten herkend in dit bestand — vul de gegevens handmatig in.';
-      return;
-    }
-
-    data.contracts.forEach(c => {
-      addContract();
-      const rows = document.querySelectorAll('.contract');
-      const row = rows[rows.length - 1];
-      row.querySelector('.c_datum').value = pdfDateToInputValue(c.date);
-      row.querySelector('.c_invoice').value = c.contract;
-      row.querySelector('.c_merchant').value = c.vendor;
-    });
-
-    statusEl.textContent = `${data.contracts.length} overeenkomst(en) automatisch ingevuld op basis van dit bestand — controleer en pas aan waar nodig (o.a. "in fysieke winkel gekocht" staat nog uit).`;
-  } catch (e) {
-    console.error(e);
-    statusEl.textContent = 'Kon dit PDF-bestand niet lezen. Vul de gegevens handmatig in.';
-  }
-}
-
-function fmtBedrag(num) {
-  return num.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function fmtDatum(dateStr) {
-  if (!dateStr) return '[datum]';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function escHtml(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-// Strips accidental ** sequences from user input so it can't break bold-markdown parsing
-function clean(str) {
-  return (str || '').trim().replace(/\*\*/g, '');
-}
-
-// "**bold**" markdown -> HTML for the on-screen preview
-function mdToHtml(md) {
-  return escHtml(md).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-}
-
-// "**bold**" markdown -> plain run segments (bold flag), used for the real docx
-function mdToRuns(md) {
-  return (md || '').split('**').map((text, i) => ({ text, bold: i % 2 === 1 }));
-}
-
-function parasToPreviewHtml(paras) {
-  const out = [];
-  let i = 0;
-  while (i < paras.length) {
-    const p = paras[i];
-    if (p.text !== undefined) {
-      out.push(`<h1>${escHtml(p.text)}</h1>`);
-      i++;
-      continue;
-    }
-    if (p.bullet) {
-      const items = [];
-      while (i < paras.length && paras[i].bullet) {
-        items.push(`<li>${mdToHtml(paras[i].md || '')}</li>`);
-        i++;
-      }
-      out.push(`<ul class="doc-bullets">${items.join('')}</ul>`);
-      continue;
-    }
-    if (p.lines) {
-      const styles = [];
-      if (p.center) styles.push('text-align:center');
-      else if (p.align === 'right') styles.push('text-align:right');
-      else if (p.justify) styles.push('text-align:justify');
-      const html = p.lines.map(l => escHtml(l)).join('<br>');
-      out.push(`<p style="${styles.join(';')}">${html}</p>`);
-      i++;
-      continue;
-    }
-    const styles = [];
-    if (p.center) styles.push('text-align:center');
-    else if (p.align === 'right') styles.push('text-align:right');
-    else if (p.justify) styles.push('text-align:justify');
-    if (p.indent) styles.push('margin-left:24px');
-    if (p.spacingBefore) styles.push('margin-top:1.3em');
-    const html = mdToHtml(p.md || '');
-    out.push(`<p style="${styles.join(';')}">${html || '&nbsp;'}</p>`);
-    i++;
-  }
-  return out.join('\n');
-}
-
-function escXml(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function runXml(text, bold, size) {
-  const rPr = `<w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>${bold ? '<w:b/>' : ''}<w:sz w:val="${size}"/></w:rPr>`;
-  return `<w:r>${rPr}<w:t xml:space="preserve">${escXml(text)}</w:t></w:r>`;
-}
-
-function paraXml(p) {
-  if (p.lines) {
-    const size = 24;
-    let jc = 'left';
-    if (p.center) jc = 'center';
-    else if (p.align === 'right') jc = 'right';
-    else if (p.justify) jc = 'both';
-    const rPrOpen = `<w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="${size}"/></w:rPr>`;
-    const runsXml = p.lines.map((line, idx) =>
-      `<w:r>${rPrOpen}${idx > 0 ? '<w:br/>' : ''}<w:t xml:space="preserve">${escXml(line)}</w:t></w:r>`
-    ).join('');
-    return `<w:p><w:pPr><w:jc w:val="${jc}"/></w:pPr>${runsXml}</w:p>`;
-  }
-  let runs, size;
-  if (p.text !== undefined) {
-    runs = [{ text: p.text, bold: true }];
-    size = 27; // ~13.5pt, matches the preview's h1
-  } else if (p.bullet) {
-    runs = [{ text: '•\t', bold: false }, ...mdToRuns(p.md || '')];
-    size = 24;
-  } else {
-    runs = mdToRuns(p.md || '');
-    size = 24; // 12pt
-  }
-  const runsXml = runs.map(r => runXml(r.text, r.bold, size)).join('');
-  let jc = 'left';
-  if (p.center || p.text !== undefined) jc = 'center';
-  else if (p.align === 'right') jc = 'right';
-  else if (p.justify || p.bullet) jc = 'both';
-  const ind = p.bullet ? '<w:ind w:left="720" w:hanging="360"/>' : (p.indent ? '<w:ind w:left="480"/>' : '');
-  const spacing = p.spacingBefore ? '<w:spacing w:before="240"/>' : '';
-  return `<w:p><w:pPr>${spacing}${ind}<w:jc w:val="${jc}"/></w:pPr>${runsXml}</w:p>`;
-}
-
-const CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-<Default Extension="xml" ContentType="application/xml"/>
-<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-</Types>`;
-
-const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
-
-function buildDocumentXml(paras) {
-  const body = paras.map(paraXml).join('');
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body>
-</w:document>`;
-}
-
-function generate() {
-  const errorBox = document.getElementById('errorBox');
-  errorBox.style.display = 'none';
-
-  const naam_debiteur = clean(document.getElementById('naam_debiteur').value);
-  const land_debiteur = clean(document.getElementById('land_debiteur').value);
-  const adres_debiteur = clean(document.getElementById('adres_debiteur').value);
-  const geboortedatum_debiteur = fmtDatum(document.getElementById('geboortedatum_debiteur').value);
-  const hoofdsomRaw = parseFloat(document.getElementById('bedrag_hoofdsom').value);
-  const kantooradres = clean(document.getElementById('kantooradres').value);
-  const kantoorstad = clean(document.getElementById('kantoorstad').value);
-  const kantoorland = clean(document.getElementById('kantoorland').value);
-  const kantoornaam = clean(document.getElementById('kantoornaam').value);
-  const gemachtigde = clean(document.getElementById('gemachtigde').value);
-
-  if (!naam_debiteur || !land_debiteur || !adres_debiteur || isNaN(hoofdsomRaw) ||
-      !kantooradres || !kantoorstad || !kantoorland || !kantoornaam || !gemachtigde) {
-    errorBox.textContent = 'Vul alle verplichte velden in (gedaagde, land, adres, bedrag, kantoorgegevens, gemachtigde).';
-    errorBox.style.display = 'block';
-    return;
-  }
-
-  const heeftSchuldbekentenis = document.getElementById('heeft_schuldbekentenis').checked;
-  if (heeftSchuldbekentenis && (!document.getElementById('datum_schuldbekentenis').value || !document.getElementById('datum_ingang_termijnen').value)) {
-    errorBox.textContent = 'Vul bij de schuldbekentenis zowel de datum van ondertekening als de ingangsdatum van de termijnen in.';
-    errorBox.style.display = 'block';
-    return;
-  }
-
-  const contractDivs = document.querySelectorAll('.contract');
-  const bullet2 = []; // alle overeenkomsten
-  const bullet3 = []; // alleen in-store
-
-  contractDivs.forEach(div => {
-    const datumInput = div.querySelector('.c_datum').value;
-    const invoice = clean(div.querySelector('.c_invoice').value);
-    const merchant = clean(div.querySelector('.c_merchant').value);
-    const inStore = div.querySelector('.c_instore').checked;
-    if (!datumInput || !invoice || !merchant) return;
-    const datum = fmtDatum(datumInput);
-    bullet2.push({ datum, invoice, merchant });
-    if (inStore) bullet3.push({ datum, invoice, merchant });
-  });
-
-  if (bullet2.length === 0) {
-    errorBox.textContent = 'Vul bij minstens één overeenkomst de datum, het invoice ID en de merchant in.';
-    errorBox.style.display = 'block';
-    return;
-  }
-
-  const hoofdsom = fmtBedrag(hoofdsomRaw);
-  const incassokosten = fmtBedrag(hoofdsomRaw * (INCASSO_PERCENTAGE / 100));
-  const datumExploot = fmtDatum(document.getElementById('datum_sommatie_exploot').value);
-  const sommatiebriefRaw = document.getElementById('datum_sommatiebrief').value;
-  const ondertekLand = clean(document.getElementById('ondertekening_land').value) || '[plaats]';
-  const ondertekDatum = fmtDatum(document.getElementById('ondertekening_datum').value);
-
-  const sommatieBody = sommatiebriefRaw
-    ? `Op **${datumExploot}** is gedaagde gesommeerd in de vorm van een sommatie-exploot voor een hoofdsom van **Afl. ${hoofdsom}**. Voorts is gedaagde op **${fmtDatum(sommatiebriefRaw)}** gesommeerd in de vorm van een sommatiebrief voor het op dat moment openstaande bedrag${heeftSchuldbekentenis ? '' : '. Gedaagde heeft hierop echter wederom niet gereageerd'};`
-    : `Op **${datumExploot}** is gedaagde gesommeerd in de vorm van een sommatie-exploot voor een hoofdsom van **Afl. ${hoofdsom}**${heeftSchuldbekentenis ? '' : '. Gedaagde heeft hierop echter niet gereageerd'};`;
-
-  const eiseresKey = document.getElementById('eiseresPreset').value;
-  const introMd = EISERES_PRESETS[eiseresKey]({ kantooradres, kantoorstad, kantoorland, kantoornaam, gemachtigde });
-
-  const paras = [];
-  paras.push({ text: 'RECHTERLIJK BEVEL TOT BETALING' });
-  paras.push({ lines: ['De Edelachtbare Heer/Vrouwe', 'Rechter in het Gerecht in', 'Eerste Aanleg van Aruba'] });
-  paras.push({ md: '**Geeft eerbiedig te kennen:**' });
-  paras.push({ md: introMd, justify: true });
-
-  let n = 1;
-  paras.push({
-    md: `${n++}. Eiseres verzoekt Uw Gerecht gedaagde, **${naam_debiteur}**, geboren op **${geboortedatum_debiteur}**, wonende te **${land_debiteur}** aan **${adres_debiteur}**, zoals blijkt uit de verklaring van de Dienst Burgerlijke Stand en Bevolkingsregister (prod. 2), te bevelen tot betaling van **Afl. ${hoofdsom}**, vermeerderd met de buitengerechtelijke incassokosten ad **Afl. ${incassokosten}** en de wettelijke rente vanaf de dag der opeisbaarheid tot de dag der algehele voldoening, met veroordeling van gedaagde in de kosten van deze procedure, althans een zodanige beslissing te nemen als Uw Gerecht in goede justitie geraden voorkomt;`,
-    justify: true
-  });
-
-  paras.push({ md: `${n++}. Tussen gedaagde en de hieronder genoemde merchant(s) zijn de volgende huurkoopovereenkomsten tot stand gekomen:`, justify: true });
-  bullet2.forEach(c => paras.push({ md: `Op **${c.datum}** heeft gedaagde bij **${c.merchant}** (invoice ID: **${c.invoice}**) goederen aangekocht;`, bullet: true }));
-
-  if (bullet3.length > 0) {
-    paras.push({ md: `${n++}. Verzoekster heeft op de volgende datum(s) de vordering van de betreffende merchant op gedaagde overgenomen:`, justify: true });
-    bullet3.forEach(c => paras.push({ md: `Op **${c.datum}** de vordering van **${c.merchant}** (invoice ID: **${c.invoice}**);`, bullet: true }));
-    paras.push({ md: '(prod. 3);', indent: true });
-  }
-
-  paras.push({
-    md: `${n++}. Gedaagde heeft zich niet, althans niet volledig/strikt, gehouden aan de uit de overeenkomsten voor hem/haar voortvloeiende verplichtingen, met een openstaande schuld als gevolg. Uit het als bijlage gevoegde “Customer Statement” volgt dat gedaagde tot op heden een bedrag groot **Afl. ${hoofdsom}** verschuldigd is aan eiseres (prod. 4). Verzoekster heeft gedaagde meerdere malen benaderd over de openstaande schuld. Desondanks bleef betaling tot op heden achterwege;`,
-    justify: true
-  });
-
-  paras.push({
-    md: `${n++}. Daar gedaagde zijn/haar verplichtingen niet is nagekomen, heeft eiseres, ter beperking van de door haar opgelopen schade (boeterente en winstderving), een incassobureau in de arm genomen. Eiseres dient dientengevolge ${INCASSO_PERCENTAGE}% buitengerechtelijke incassokosten te betalen, berekend over het totaal verschuldigde bedrag, zijnde **Afl. ${incassokosten}**;`,
-    justify: true
-  });
-
-  paras.push({ md: `${n++}. ${sommatieBody}`, justify: true });
-
-  if (heeftSchuldbekentenis) {
-    const datumSchuldbekentenis = fmtDatum(document.getElementById('datum_schuldbekentenis').value);
-    const datumIngangTermijnen = fmtDatum(document.getElementById('datum_ingang_termijnen').value);
-    const bedragBetaaldRaw = parseFloat(document.getElementById('bedrag_betaald').value) || 0;
-    const bedragBetaald = fmtBedrag(bedragBetaaldRaw);
-
-    paras.push({
-      md: `${n++}. Gedaagde heeft op **${datumSchuldbekentenis}** een schuldbekentenis met afbetalingsregeling getroffen op het kantoor van de gemachtigde van eiseres en hierbij afgesproken dat het totaal-verschuldigde ingaande **${datumIngangTermijnen}** betaald zal worden in maandelijkse termijnen (prod. VII);`,
-      justify: true
-    });
-
-    if (bedragBetaaldRaw > 0) {
-      paras.push({
-        md: `${n++}. Gedaagde heeft hierop na ingebrekestelling en na het uit handen geven van de vordering tot op heden een bedrag van **Afl. ${bedragBetaald}** in mindering voldaan, doch is met betaling van het restant verschuldigde tot op heden ingebreke gebleven. Bijgevoegd is een overzicht van de tot op heden gedane betalingen (prod. VIII);`,
-        justify: true
-      });
-    } else {
-      paras.push({
-        md: `${n++}. Gedaagde is echter, ondanks ingebrekestelling en het uit handen geven van de vordering, tot op heden in gebreke gebleven met de betaling van het verschuldigde bedrag;`,
-        justify: true
-      });
-    }
-  }
-
-  paras.push({ md: `${n++}. Eiseres ziet zich genoodzaakt, nu gedaagde halsstarrig weigert tot betaling over te gaan, dit langs gerechtelijke weg in te vorderen;`, justify: true });
-  paras.push({ md: `${n++}. Eiseres biedt uitdrukkelijk bewijs aan van haar stellingen door alle middelen rechtens, voor zover op haar enige bewijslast mocht rusten;`, justify: true });
-  paras.push({ md: `${n++}. Verzoekster verschijnt vrijwillig, zodat haar oproeping achterwege kan blijven.`, justify: true });
-
-  paras.push({ md: '**MITSDIEN HET U E.A. MOGE BEHAGEN bij vonnis, uitvoerbaar bij voorraad:**', spacingBefore: true });
-  paras.push({
-    md: `I. gedaagde te veroordelen om tegen behoorlijke kwijting aan verzoekster te betalen de somma van **Afl. ${hoofdsom}**, te vermeerderen met de buitengerechtelijke incassokosten ad ${INCASSO_PERCENTAGE}%, zijnde **Afl. ${incassokosten}**, alsmede de wettelijke rente over voormeld bedrag vanaf de dag der opeisbaarheid tot aan de dag der algehele voldoening, althans een zodanige beslissing te nemen als U E.A. in goede justitie geraden voorkomt;`,
-    justify: true
-  });
-  paras.push({ md: 'II. gedaagde te veroordelen in de kosten van dit geding, waaronder begrepen de explootkosten, de kosten van betekening der sommatie en de griffierechten.', justify: true });
-
-  paras.push({ md: `${ondertekLand}, ${ondertekDatum}`, spacingBefore: true });
-  paras.push({ md: 'Namens Eiseres,', align: 'right' });
-  paras.push({ md: '', align: 'right' });
-  paras.push({ md: '', align: 'right' });
-  paras.push({ md: gemachtigde, align: 'right' });
-
-  document.getElementById('docPreview').innerHTML = parasToPreviewHtml(paras);
-  document.getElementById('output').style.display = 'block';
-  document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
-  window.__docParas = paras;
-  window.__lastNaam = naam_debiteur;
-}
-
-async function downloadDocx() {
-  if (!window.__docParas) return;
-  try {
-    const zip = new JSZip();
-    zip.file('[Content_Types].xml', CONTENT_TYPES_XML);
-    zip.folder('_rels').file('.rels', RELS_XML);
-    zip.folder('word').file('document.xml', buildDocumentXml(window.__docParas));
-    const blob = await zip.generateAsync({
-      type: 'blob',
-      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Bevel-tot-betaling-${window.__lastNaam.replace(/\s+/g, '-')}.docx`;
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    console.error(e);
-    alert('Het Word-bestand kon niet worden gemaakt (mogelijk geen internetverbinding). Het bestand wordt nu als HTML gedownload — dit kun je in Word openen en opslaan als .docx.');
-    downloadHtml();
-  }
-}
-
-function downloadPdf() {
-  if (!window.__docParas) return;
-  const body = parasToPreviewHtml(window.__docParas);
-  const printHtml = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Bevel tot Betaling - ${escHtml(window.__lastNaam)}</title>
-  <style>
-    @page { size: A4; margin: 2.5cm; }
-    body{font-family:"Times New Roman",Times,serif;font-size:12pt;line-height:1.55;margin:0;}
-    h1{text-align:center;font-size:13pt;letter-spacing:1px;}
-    p{margin:0 0 0.8em 0;}
-    ul.doc-bullets{list-style:none;margin:0.4em 0 0.9em 0;padding:0;}
-    ul.doc-bullets>li{position:relative;padding-left:20px;margin-bottom:6px;text-align:justify;}
-    ul.doc-bullets>li::before{content:"•";position:absolute;left:4px;font-weight:bold;}
-  </style></head><body>${body}</body></html>`;
-
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    alert('Kon geen nieuw venster openen om te printen (mogelijk geblokkeerd door de browser). Sta pop-ups toe voor deze pagina en probeer opnieuw.');
-    return;
-  }
-  printWindow.document.open();
-  printWindow.document.write(printHtml);
-  printWindow.document.close();
-  printWindow.onload = () => {
-    printWindow.focus();
-    printWindow.print();
-  };
-}
-
-function downloadHtml() {
-  if (!window.__docParas) return;
-  const body = parasToPreviewHtml(window.__docParas);
-  const full = `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"><title>Bevel tot Betaling - ${escHtml(window.__lastNaam)}</title>
-  <style>
-    body{font-family:"Times New Roman",Times,serif;font-size:12pt;line-height:1.55;max-width:21cm;margin:2cm auto;}
-    h1{text-align:center;font-size:13pt;letter-spacing:1px;}
-    p{margin:0 0 0.8em 0;}
-    ul.doc-bullets{list-style:none;margin:0.4em 0 0.9em 0;padding:0;}
-    ul.doc-bullets>li{position:relative;padding-left:20px;margin-bottom:6px;text-align:justify;}
-    ul.doc-bullets>li::before{content:"•";position:absolute;left:4px;font-weight:bold;}
-  </style></head><body>${body}</body></html>`;
-  const blob = new Blob([full], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `Bevel-tot-betaling-${window.__lastNaam.replace(/\s+/g, '-')}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-</script>
 </body>
 </html>
