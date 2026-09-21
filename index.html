@@ -17,6 +17,8 @@
     --blue-soft:#E8F0F6;
     --rust:#B0472E;
     --rust-soft:#F6E6E1;
+    --teal:#2E7D6B;
+    --teal-soft:#E3EFEA;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -81,7 +83,7 @@
 
   .choices{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
+    grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
     gap:30px 22px;
   }
   .choice{
@@ -116,6 +118,7 @@
   .choice.claim .tab{ background:var(--gold); }
   .choice.statement .tab{ background:var(--blue); }
   .choice.notice .tab{ background:var(--rust); }
+  .choice.lease .tab{ background:var(--teal); }
 
   .choice:hover, .choice:focus-visible{
     transform:translateY(-4px);
@@ -125,6 +128,7 @@
   .choice.claim:hover{ border-color:#C7AD7C; }
   .choice.statement:hover{ border-color:#9DC1DD; }
   .choice.notice:hover{ border-color:#DBA79A; }
+  .choice.lease:hover{ border-color:#9AC4B8; }
 
   .choice .icon{
     width:44px; height:44px;
@@ -135,6 +139,7 @@
   .choice.claim .icon{ background:var(--gold-soft); }
   .choice.statement .icon{ background:var(--blue-soft); }
   .choice.notice .icon{ background:var(--rust-soft); }
+  .choice.lease .icon{ background:var(--teal-soft); }
 
   .choice h2{
     font-family:Georgia, "Iowan Old Style", "Palatino Linotype", serif;
@@ -164,6 +169,7 @@
   .choice.claim .go{ color:var(--gold); }
   .choice.statement .go{ color:var(--blue); }
   .choice.notice .go{ color:var(--rust); }
+  .choice.lease .go{ color:var(--teal); }
   .choice .go svg{ transition:transform .18s ease; }
   .choice:hover .go svg{ transform:translateX(3px); }
 
@@ -228,6 +234,21 @@
       </div>
       <h2>Final Notice</h2>
       <p class="desc">Laatste betalingsherinnering per e-mail, met automatische escalatiedatum, klaar om te printen of als PDF te bewaren.</p>
+      <span class="go">Formulier openen
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+    <a class="choice lease" href="lease-agreement.html">
+      <span class="tab">Huurovereenkomst</span>
+      <div class="icon">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="11" rx="1.2" stroke="#2E7D6B" stroke-width="1.8"/>
+          <path d="M2 18.5H22" stroke="#2E7D6B" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M9.5 15.5L8.7 18.5M14.5 15.5L15.3 18.5" stroke="#2E7D6B" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>Computer Lease Contract</h2>
+      <p class="desc">Huurovereenkomst met koopoptie voor apparatuur, met automatisch berekende looptijd, incassodatum en een uniek contract-ID in de PDF-header.</p>
       <span class="go">Formulier openen
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
