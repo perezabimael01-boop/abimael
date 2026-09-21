@@ -442,13 +442,7 @@ function buildPdf(d){
   y += 4;
   text('If a payment is not made in time a penalty fee of Fl 25.00 will be added to that payment for every day of default, with a maximum penalty fee of 100% of a monthly payment term.', { spaceAfter: 14 });
 
-  text(`IN WITNESS WHEREOF, the parties hereto have executed this agreement on ${d.startFormatted}`, { spaceAfter: 36 });
-
-  ensureSpace(90);
-  text('_______________________________', { spaceAfter: 2 });
-  text('LESSOR — MIMI COMPUTER & BUSINESS PRODUCTS N.V.', { spaceAfter: 20 });
-  text('_______________________________', { spaceAfter: 2 });
-  text(`LESSEE — ${d.name}`, { spaceAfter: 2 });
+  text(`IN WITNESS WHEREOF, the parties hereto have executed this agreement on ${d.startFormatted}`, { spaceAfter: 8 });
 
   return doc;
 }
