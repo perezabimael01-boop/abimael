@@ -366,8 +366,12 @@ function buildPdf(d){
 
   function ensureSpace(h){
     if (y + h > pageHeight - marginBottom){
+      const savedFont = doc.getFont();
+      const savedSize = doc.internal.getFontSize();
       doc.addPage();
       drawHeader();
+      doc.setFont(savedFont.fontName, savedFont.fontStyle);
+      doc.setFontSize(savedSize);
       y = 70;
     }
   }
@@ -377,9 +381,6 @@ function buildPdf(d){
     doc.setFontSize(9);
     doc.setTextColor(90);
     doc.text(`Contract No.: ${d.contractNumber}`, pageWidth - marginRight, 34, { align: 'right' });
-    doc.setDrawColor(222, 210, 174);
-    doc.setLineWidth(0.6);
-    doc.line(marginLeft, 42, pageWidth - marginRight, 42);
     doc.setTextColor(0);
   }
 
