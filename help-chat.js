@@ -4,7 +4,7 @@
 */
 
 // >>> Your Cloudflare worker address — the ONLY place you need to change it <<<
-const HELP_CHAT_ENDPOINT = "https://abimael.perezabimael01.workers.dev";
+const HELP_CHAT_ENDPOINT = "https://mycomputer-help.perezabimael01.workers.dev";
 
 (function(){
   const script = document.currentScript;
@@ -119,15 +119,19 @@ const HELP_CHAT_ENDPOINT = "https://abimael.perezabimael01.workers.dev";
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history, page: pageContext() })
       });
-      const data = await res.json();
-      if (!res.ok || !data.reply) throw new Error(data.error || res.status);
+      let data;
+      try { data = await res.json(); }
+      catch { throw new Error("The worker did not answer with chat data (is the worker.js code deployed?)"); }
+      if (!res.ok || !data.reply) throw new Error(data.error || ("HTTP " + res.status));
       wait.remove();
       addMsg(data.reply, "bot");
       history.push({ role: "assistant", content: data.reply });
     } catch (err){
       console.error("Help chat:", err);
       wait.remove();
-      addMsg(T.error, "bot");
+      const why = err && err.message && err.message !== "Failed to fetch" ? err.message
+        : "Could not reach the worker (check the address in help-chat.js).";
+      addMsg(T.error + "\n\n(" + why + ")", "bot");
       history.pop(); // let the user ask again
     }
     busy = false; sendBtn.disabled = false; input.focus();
