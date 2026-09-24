@@ -514,6 +514,10 @@ function buildContractSchedule(contract, statementDate){
       isLF: false,
       future: (!isPaid && due > statementDate)
     });
+    // Upcoming (not yet due) payments are shown as due as of the statement date
+    if(!isPaid && due > statementDate){
+      rows[rows.length-1].invoiceDate = statementDate;
+    }
 
     if(!isPaid && due <= statementDate){
       const daysLate = daysBetween(due, statementDate);
@@ -522,17 +526,16 @@ function buildContractSchedule(contract, statementDate){
         const reachedCap = rawAmount >= monthlyAmount;
         const lfAmount = Math.min(rawAmount, monthlyAmount);
 
-        let lfDate;
+        // LF grows FL 25 per day (capped at the monthly amount) and is dated
+        // today while it is still growing. Once capped, it is dated 1 day before
+        // the next invoice. If this was the last payment of the plan, use the
+        // date the next invoice WOULD have fallen on. Never dated in the future.
+        let lfDate = statementDate;
         if(reachedCap){
-          const nextDue = dueDates[i+1];
-          if(nextDue){
-            lfDate = new Date(nextDue);
-            lfDate.setDate(lfDate.getDate() - 1);
-          } else {
-            lfDate = statementDate;
-          }
-        } else {
-          lfDate = statementDate;
+          const nextDue = dueDates[i+1] || addMonthsClamped(due, 1, recurringDay);
+          const dayBefore = new Date(nextDue);
+          dayBefore.setDate(dayBefore.getDate() - 1);
+          lfDate = dayBefore < statementDate ? dayBefore : statementDate;
         }
 
         lfCount++;
