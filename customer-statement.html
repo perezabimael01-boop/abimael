@@ -371,6 +371,9 @@ function fmtDate(d){
   if(!d) return "N/A";
   return d.getDate().toString().padStart(2,"0") + "-" + MONTH_NAMES[d.getMonth()] + "-" + d.getFullYear();
 }
+function round2(n){
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
 function fmtMoney(n){
   return "FL " + n.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
 }
@@ -500,7 +503,7 @@ function buildContractSchedule(contract, statementDate){
     const due = dueDates[i];
     const isPaid = i < monthsCompleted;
     const balance = isPaid ? 0 : monthlyAmount;
-    if(!isPaid) subtotal += monthlyAmount;
+    if(!isPaid) subtotal = round2(subtotal + monthlyAmount);
 
     rows.push({
       label: "M" + (i+1),
@@ -523,7 +526,7 @@ function buildContractSchedule(contract, statementDate){
       if(daysLate > 0){
         const rawAmount = daysLate * 25;
         const reachedCap = rawAmount >= monthlyAmount;
-        const lfAmount = Math.min(rawAmount, monthlyAmount);
+        const lfAmount = round2(Math.min(rawAmount, monthlyAmount));
 
         // LF grows FL 25 per day (capped at the monthly amount) and is dated
         // today while it is still growing. Once capped, it is dated 1 day before
@@ -538,7 +541,7 @@ function buildContractSchedule(contract, statementDate){
         }
 
         lfCount++;
-        subtotal += lfAmount;
+        subtotal = round2(subtotal + lfAmount);
         rows.push({
           label: "L" + lfCount,
           invoiceDate: lfDate,
@@ -577,7 +580,8 @@ function generateStatement(){
     const merchantName = block.querySelector('.c-merchantName').value.trim() || "—";
     const rawAmount = parseFloat(block.querySelector('.c-monthlyAmount').value);
     const currency = block.querySelector('.c-currency').value;
-    const monthlyAmount = currency === 'USD' ? rawAmount * USD_TO_FL : rawAmount;
+    // Round each monthly payment to 2 decimals first, so totals add up exactly
+    const monthlyAmount = round2(currency === 'USD' ? rawAmount * USD_TO_FL : rawAmount);
     const purchaseDateStr = block.querySelector('.c-purchaseDate').value;
     const recurringDay = parseInt(block.querySelector('.c-recurringDay').value, 10);
     const totalMonths = parseInt(block.querySelector('.c-totalMonths').value, 10);
@@ -604,14 +608,14 @@ function generateStatement(){
   let grandSubtotal = 0;
   const contractResults = contracts.map(c=>{
     const { rows, subtotal } = buildContractSchedule(c, statementDate);
-    grandSubtotal += subtotal;
+    grandSubtotal = round2(grandSubtotal + subtotal);
     return { contract: c, rows, subtotal };
   });
 
   let legalFee = 0, total = grandSubtotal;
   if(option === 'B'){
-    legalFee = grandSubtotal * 0.15;
-    total = grandSubtotal + legalFee;
+    legalFee = round2(grandSubtotal * 0.15);
+    total = round2(grandSubtotal + legalFee);
   }
 
   const statementData = { customerName, statementDate, contractResults, grandSubtotal, legalFee, total, option };
