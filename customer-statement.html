@@ -483,10 +483,9 @@ function buildContractSchedule(contract, statementDate){
   const { monthlyAmount, purchaseDate, recurringDay, totalMonths, monthsCompleted } = contract;
 
   const dueDates = [purchaseDate];
-  let cursor = setDayClamped(purchaseDate.getFullYear(), purchaseDate.getMonth(), recurringDay);
-  if(cursor <= purchaseDate){
-    cursor = addMonthsClamped(cursor, 1, recurringDay);
-  }
+  // The first payment covers the purchase month, so the next invoice always
+  // falls in the following month (never twice in the same month).
+  let cursor = addMonthsClamped(purchaseDate, 1, recurringDay);
   dueDates.push(cursor);
   for(let i=2;i<totalMonths;i++){
     cursor = addMonthsClamped(cursor, 1, recurringDay);
