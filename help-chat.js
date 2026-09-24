@@ -4,7 +4,7 @@
 */
 
 // >>> Your Cloudflare worker address — the ONLY place you need to change it <<<
-const HELP_CHAT_ENDPOINT = "https://mycomputer-help.perezabimael01.workers.dev";
+const HELP_CHAT_ENDPOINT = "https://abimael-help.perezabimael01.workers.dev";
 
 (function(){
   const script = document.currentScript;
