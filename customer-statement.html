@@ -55,6 +55,8 @@
   .amount-row{display:flex;gap:8px;}
   .amount-row .c-monthlyAmount{flex:1;}
   .amount-row .c-currency{width:80px;flex:none;}
+  .amount-row #deductionAmount{flex:1;}
+  .amount-row #deductionCurrency{width:80px;flex:none;}
   .field.full{grid-column:1/-1;}
   label{font-size:13px;font-weight:600;color:var(--ink);}
   label .hint{font-weight:400;color:var(--muted);display:block;font-size:12px;margin-top:1px;}
@@ -316,6 +318,17 @@
             <b>Option B</b>
             Same as A, plus a 15% legal fee added on top of the combined subtotal.
           </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Payment agreement deduction<span class="hint">Optional — amount deducted from the open balance (leave empty for none)</span></label>
+        <div class="amount-row">
+          <input type="number" id="deductionAmount" step="0.01" min="0" placeholder="e.g. 500.00">
+          <select id="deductionCurrency">
+            <option value="FL" selected>FL</option>
+            <option value="USD">USD</option>
+          </select>
         </div>
       </div>
     </div>
@@ -682,7 +695,19 @@ function generateStatement(){
     total = round2(grandSubtotal + legalFee);
   }
 
-  const statementData = { issuerKey, customerName, statementDate, contractResults, grandSubtotal, legalFee, total, option };
+  // ---- Payment agreement deduction (taken off the open balance) ----
+  const deductionRaw = parseFloat(document.getElementById('deductionAmount').value);
+  const deductionCurrency = document.getElementById('deductionCurrency').value;
+  let deduction = 0;
+  if(!isNaN(deductionRaw) && deductionRaw !== 0){
+    if(deductionRaw < 0){ showError("The payment agreement deduction can't be negative."); return; }
+    deduction = round2(deductionCurrency === 'USD' ? deductionRaw * USD_TO_FL : deductionRaw);
+    if(deduction > total){ showError("The payment agreement deduction (" + fmtMoney(deduction) + ") is larger than the balance (" + fmtMoney(total) + ")."); return; }
+  }
+  const balanceBeforeDeduction = total;
+  total = round2(total - deduction);
+
+  const statementData = { issuerKey, customerName, statementDate, contractResults, grandSubtotal, legalFee, deduction, balanceBeforeDeduction, total, option };
   window.currentStatementData = statementData;
   renderStatement(statementData);
 }
@@ -742,6 +767,17 @@ function renderStatement(data){
       <td class="amt-col">${fmtMoney(data.legalFee)}</td>
     `;
     tbody.appendChild(legalRow);
+  }
+
+  if(data.deduction > 0){
+    const dedRow = document.createElement('tr');
+    dedRow.className = 'totals-row';
+    dedRow.innerHTML = `
+      <td colspan="6"></td>
+      <td>Payment agreement</td>
+      <td class="amt-col">-${fmtMoney(data.deduction)}</td>
+    `;
+    tbody.appendChild(dedRow);
   }
 
   const totalRow = document.createElement('tr');
@@ -884,6 +920,10 @@ function downloadPDF(){
     colMax[6] = Math.max(colMax[6], doc.getTextWidth('Legal Fee'), doc.getTextWidth('Total'));
     const totalsAmounts = [fmtMoney(data.grandSubtotal), fmtMoney(data.total)];
     if(data.option === 'B') totalsAmounts.push(fmtMoney(data.legalFee));
+    if(data.deduction > 0){
+      colMax[6] = Math.max(colMax[6], doc.getTextWidth('Payment agreement'));
+      totalsAmounts.push('-' + fmtMoney(data.deduction));
+    }
     totalsAmounts.forEach(t=>{ colMax[7] = Math.max(colMax[7], doc.getTextWidth(t)); });
 
     const pad = sharedStyles.cellPadding * 2 + 2;
@@ -927,6 +967,13 @@ function downloadPDF(){
         { content: '', colSpan: 6 },
         { content: 'Legal Fee', styles: { fontStyle: 'bold' } },
         { content: fmtMoney(data.legalFee), styles: { fontStyle: 'bold' } }
+      ]);
+    }
+    if(data.deduction > 0){
+      totalsBody.push([
+        { content: '', colSpan: 6 },
+        { content: 'Payment agreement', styles: { fontStyle: 'bold' } },
+        { content: '-' + fmtMoney(data.deduction), styles: { fontStyle: 'bold' } }
       ]);
     }
     totalsBody.push([
