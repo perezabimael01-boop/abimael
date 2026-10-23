@@ -194,6 +194,20 @@
     color:var(--ink);
     line-height:1.6;
   }
+  .prefill-note{
+    display:none;
+    background:var(--teal-soft);
+    border:1px solid var(--line);
+    border-left:3px solid var(--teal);
+    border-radius:8px;
+    padding:12px 16px;
+    margin:0 0 18px;
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+  .prefill-note.show{ display:block; }
+  .field.needs-input input, .field.needs-input textarea{ border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-soft); }
   .result.show{ display:block; }
   .result strong{ font-weight:700; }
   .result code{
@@ -245,6 +259,8 @@
     <h1>Computer Lease Contract</h1>
     <p>Vul de gegevens van de klant in en bekijk het contract eerst als voorbeeld. Het contract heeft dezelfde opmaak als het originele contract; het contractnummer komt bovenaan de eerste pagina te staan.</p>
   </div>
+
+  <div class="prefill-note" id="prefillNote" role="status"></div>
 
   <form id="leaseForm" novalidate>
     <div class="field" id="f-contractNumber">
@@ -589,6 +605,43 @@ downloadBtn.addEventListener('click', function(){
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
+
+// ---- Prefill from the Customer Statement (link ends in #prefill=...) ----
+(function prefillFromStatement(){
+  const m = location.hash.match(/prefill=([^&]+)/);
+  if (!m) return;
+  let p;
+  try { p = JSON.parse(decodeURIComponent(m[1])); } catch (err){ return; }
+  const set = (id, v) => { if (v !== undefined && v !== null && v !== '') document.getElementById(id).value = v; };
+  set('contractNumber', p.contractNumber);
+  set('name', p.name);
+  set('startDate', p.startDate);
+  set('months', p.months);
+  set('billingDate', p.billingDay);
+  set('amount', p.amount);
+
+  const todo = [];
+  [['contractNumber','f-contractNumber','contractnummer'], ['name','f-name','naam klant'], ['items','f-items','apparatuur / item(s)'],
+   ['startDate','f-date','contractdatum'], ['months','f-months','aantal maanden'], ['amount','f-amount','maandbedrag']]
+    .forEach(([id, fieldId, label]) => {
+      if (!document.getElementById(id).value.trim()){ todo.push(label); document.getElementById(fieldId).classList.add('needs-input'); }
+    });
+  const day = parseInt(p.billingDay, 10);
+  if (!(day >= 1 && day <= 28)){ todo.push('incassodatum (1\u201328)'); document.getElementById('f-billing').classList.add('needs-input'); }
+
+  let msg = '<strong>Overgenomen uit het klantoverzicht.</strong> Controleer de gegevens';
+  msg += todo.length ? ' en vul nog in: ' + todo.join(', ') + '.' : '.';
+  if (p.convertedFromFl) msg += '<br>Het maandbedrag is omgerekend van FL naar USD (koers 1,79) \u2014 controleer het bedrag.';
+  const note = document.getElementById('prefillNote');
+  note.innerHTML = msg;
+  note.classList.add('show');
+
+  document.querySelectorAll('.field.needs-input input, .field.needs-input textarea').forEach(el => {
+    el.addEventListener('input', () => el.closest('.field').classList.remove('needs-input'), { once: true });
+  });
+  const first = document.querySelector('.field.needs-input input, .field.needs-input textarea');
+  if (first) first.focus();
+})();
 </script>
 <!-- Help chat (the worker address is set inside help-chat.js) -->
 <script src="help-chat.js"></script>
