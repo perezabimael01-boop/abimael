@@ -252,6 +252,22 @@
     margin:22px 0 0;
   }
 
+  /* ---- Follow-up documents ---- */
+  .followup{margin-top:22px;padding:22px 26px;}
+  .followup h2{font-size:16px;margin:0 0 4px;color:var(--blue-dark);}
+  .followup .sub{margin-bottom:16px;}
+  .fu-row{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap;
+  }
+  .fu-row .fu-text{font-size:13.5px;line-height:1.5;}
+  .fu-row .fu-text b{display:block;font-size:14px;}
+  .fu-row .fu-missing{color:var(--muted);font-size:12.5px;}
+  .fu-row a.btn-primary{
+    text-decoration:none;font-size:13.5px;font-weight:600;border-radius:7px;
+    padding:9px 16px;white-space:nowrap;
+  }
+  .fu-row a.btn-primary:focus-visible{outline:2px solid var(--blue-dark);outline-offset:2px;}
   @media print{
     body{background:#fff;padding:0;}
     .panel, .doc-footer-actions, .no-print{display:none !important;}
@@ -387,6 +403,12 @@
       <button class="btn-ghost" onclick="backToSetup()">&larr; Edit details</button>
       <button class="btn-ghost" onclick="window.print()">Print</button>
       <button class="btn-primary" id="downloadBtn" onclick="downloadPDF()">Download PDF</button>
+    </div>
+
+    <div class="panel followup no-print" id="followup">
+      <h2>Also create from this statement</h2>
+      <div class="sub">Each form opens in a new tab with the details from this statement already filled in. Check it, add what's missing, then generate.</div>
+      <div id="followupRows"></div>
     </div>
   </div>
 
@@ -673,6 +695,10 @@ function generateStatement(){
 
     contracts.push({
       contractNumber: contractNumber || "—",
+      rawContractNumber: contractNumber,
+      rawAmount,
+      currency,
+      purchaseDateStr,
       merchantName,
       monthlyAmount,
       purchaseDate: new Date(purchaseDateStr + "T00:00:00"),
@@ -794,6 +820,82 @@ function renderStatement(data){
   document.querySelector('.actions.no-print').style.display = 'none';
   document.getElementById('statement').style.display = 'block';
   window.scrollTo({top:0, behavior:'smooth'});
+  renderFollowup(data);
+}
+
+// ---- Follow-up documents (lease contract + final notice), prefilled ----
+// Data travels in the link's #prefill=... part, so it works offline and is
+// never sent to a server.
+function isoDate(d){
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function prefillLink(page, payload){
+  return page + "#prefill=" + encodeURIComponent(JSON.stringify(payload));
+}
+function escHtml(str){
+  return String(str).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function renderFollowup(data){
+  const USD_TO_FL = 1.79;
+  const rows = [];
+  const name = data.customerName === "\u2014" ? "" : data.customerName;
+
+  // One lease contract per contract on the statement
+  data.contractResults.forEach((cr, i)=>{
+    const c = cr.contract;
+    const amountUsd = c.currency === 'USD' ? c.rawAmount : round2(c.rawAmount / USD_TO_FL);
+    const missing = ["equipment"];
+    if(!c.rawContractNumber) missing.push("contract number");
+    if(!name) missing.push("customer name");
+    if(c.recurringDay > 28) missing.push("billing day (lease allows 1\u201328)");
+    const link = prefillLink("lease-agreement.html", {
+      contractNumber: c.rawContractNumber,
+      name,
+      startDate: c.purchaseDateStr,
+      months: c.totalMonths,
+      billingDay: c.recurringDay,
+      amount: amountUsd.toFixed(2),
+      convertedFromFl: c.currency !== 'USD'
+    });
+    const label = c.rawContractNumber ? "contract " + c.rawContractNumber : "contract " + (i+1);
+    rows.push(`
+      <div class="fu-row">
+        <div class="fu-text">
+          <b>Lease agreement for ${escHtml(label)}</b>
+          ${c.totalMonths} months, USD ${amountUsd.toFixed(2)} per month${c.currency !== 'USD' ? " (converted from FL)" : ""}
+          <div class="fu-missing">Still to fill in: ${missing.join(", ")}</div>
+        </div>
+        <a class="btn-primary" href="${link}" target="_blank" rel="noopener">Open lease agreement</a>
+      </div>`);
+  });
+
+  // One final notice for the whole open balance
+  let daysPastDue = 0;
+  data.contractResults.forEach(cr=>cr.rows.forEach(r=>{
+    if(r.isLF && r.daysLate > daysPastDue) daysPastDue = r.daysLate;
+  }));
+  const noticeMissing = ["customer e-mail"];
+  if(!name) noticeMissing.push("customer name");
+  if(!daysPastDue) noticeMissing.push("days past due");
+  const noticeLink = prefillLink("final-notice.html", {
+    sender: data.issuerKey,
+    name,
+    amount: data.total.toFixed(2),
+    daysPastDue: daysPastDue || "",
+    dateSent: isoDate(data.statementDate)
+  });
+  rows.push(`
+    <div class="fu-row">
+      <div class="fu-text">
+        <b>Final notice</b>
+        Open balance ${fmtMoney(data.total)}${daysPastDue ? ", oldest payment " + daysPastDue + " days past due" : ""}
+        <div class="fu-missing">Still to fill in: ${noticeMissing.join(", ")}</div>
+      </div>
+      <a class="btn-primary" href="${noticeLink}" target="_blank" rel="noopener">Open final notice</a>
+    </div>`);
+
+  document.getElementById('followupRows').innerHTML = rows.join("");
 }
 
 function downloadPDF(){
