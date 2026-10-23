@@ -106,6 +106,20 @@
     border-radius:7px;padding:10px 14px;font-size:13px;margin-top:16px;display:none;
   }
 
+  .prefill-note{
+    display:none;
+    background:#eaf5fd;
+    border:1px solid #bcdcf3;
+    border-left:3px solid var(--blue);
+    border-radius:7px;
+    padding:11px 14px;
+    font-size:13px;
+    line-height:1.55;
+    margin-top:18px;
+  }
+  .prefill-note.show{display:block;}
+  .field.needs-input input{border-color:var(--blue);box-shadow:0 0 0 3px #eaf5fd;}
+
   /* ---- Gmail-style preview ---- */
   #preview{display:none;}
   .mail{
@@ -217,6 +231,8 @@
       </div>
       <a href="index.html" class="no-print" style="flex:none; color:var(--blue-dark); font-size:12.5px; font-weight:600; text-decoration:none; border:1px solid var(--line); border-radius:7px; padding:8px 12px; white-space:nowrap;">&larr; Ander document</a>
     </div>
+
+    <div class="prefill-note" id="prefillNote" role="status"></div>
 
     <div class="grid">
       <div class="field full">
@@ -858,6 +874,46 @@ async function downloadPDF(){
 }
 
 document.getElementById('dateSent').valueAsDate = new Date();
+
+// ---- Prefill from the Customer Statement (link ends in #prefill=...) ----
+(function prefillFromStatement(){
+  const m = location.hash.match(/prefill=([^&]+)/);
+  if(!m) return;
+  let p;
+  try{ p = JSON.parse(decodeURIComponent(m[1])); }catch(err){ return; }
+  const set = (id, v) => { if(v !== undefined && v !== null && v !== '') document.getElementById(id).value = v; };
+
+  if(p.sender && SENDERS[p.sender]){
+    document.querySelectorAll('.sender-card').forEach(card=>{
+      const input = card.querySelector('input');
+      const on = input.value === p.sender;
+      input.checked = on;
+      card.classList.toggle('selected', on);
+    });
+  }
+  set('custName', p.name);
+  set('amount', p.amount);
+  set('daysPastDue', p.daysPastDue);
+  set('dateSent', p.dateSent);
+
+  const todo = [];
+  [['custName','naam klant'], ['custEmail','e-mailadres klant'], ['amount','openstaand bedrag'], ['daysPastDue','dagen te laat']]
+    .forEach(([id, label])=>{
+      const el = document.getElementById(id);
+      if(!el.value.trim()){
+        todo.push(label);
+        el.closest('.field').classList.add('needs-input');
+        el.addEventListener('input', ()=>el.closest('.field').classList.remove('needs-input'), { once:true });
+      }
+    });
+
+  const note = document.getElementById('prefillNote');
+  note.innerHTML = '<b>Overgenomen uit het klantoverzicht.</b> Controleer de gegevens' +
+    (todo.length ? ' en vul nog in: ' + todo.join(', ') + '.' : '.');
+  note.classList.add('show');
+  const first = document.querySelector('.field.needs-input input');
+  if(first) first.focus();
+})();
 </script>
 <!-- Help chat (the worker address is set inside help-chat.js) -->
 <script src="help-chat.js" data-lang="nl"></script>
