@@ -270,6 +270,7 @@ $("start").addEventListener("click", async () => {
   payments.forEach(p => { if (!["booked", "check"].includes(p.status)) { p.status = "pending"; p.note = ""; } });
 
   try {
+    let waits = 0;
     for (let i = 0; i < payments.length; i++) {
       const p = payments[i];
       if (stopAsked) break;
@@ -283,6 +284,14 @@ $("start").addEventListener("click", async () => {
         p.status = "failed"; p.note = e.message === "Failed to fetch" ? "Geen verbinding met de worker" : e.message;
         render(); continue;
       }
+      if (r.status === "rate_limited") {           // Cloudflare: te veel browsers, even wachten en opnieuw
+        p.status = "pending";
+        waits++;
+        if (waits > 6) throw Object.assign(new Error("Cloudflare laat de worker nu niet meer toe (limiet bereikt). Probeer het over een tijdje opnieuw; met Workers Paid is de limiet veel ruimer."), { fatal: true });
+        for (let s = 30; s > 0 && !stopAsked; s--) { state = `Cloudflare-limiet: opnieuw proberen over ${s} s…`; render(); await new Promise(res => setTimeout(res, 1000)); }
+        i--; continue;
+      }
+      waits = 0;
       if (r.status === "need_code") {              // Suave wil een code: vragen, daarna deze betaling opnieuw
         p.status = "pending"; render();
         if (!(await handleCode())) break;
