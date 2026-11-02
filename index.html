@@ -19,6 +19,8 @@
     --rust-soft:#F6E6E1;
     --teal:#2E7D6B;
     --teal-soft:#E3EFEA;
+    --plum:#6B4A86;
+    --plum-soft:#EEE7F3;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -119,6 +121,7 @@
   .choice.statement .tab{ background:var(--blue); }
   .choice.notice .tab{ background:var(--rust); }
   .choice.lease .tab{ background:var(--teal); }
+  .choice.payments .tab{ background:var(--plum); }
 
   .choice:hover, .choice:focus-visible{
     transform:translateY(-4px);
@@ -129,6 +132,7 @@
   .choice.statement:hover{ border-color:#9DC1DD; }
   .choice.notice:hover{ border-color:#DBA79A; }
   .choice.lease:hover{ border-color:#9AC4B8; }
+  .choice.payments:hover{ border-color:#BBA6CE; }
 
   .choice .icon{
     width:44px; height:44px;
@@ -140,6 +144,7 @@
   .choice.statement .icon{ background:var(--blue-soft); }
   .choice.notice .icon{ background:var(--rust-soft); }
   .choice.lease .icon{ background:var(--teal-soft); }
+  .choice.payments .icon{ background:var(--plum-soft); }
 
   .choice h2{
     font-family:Georgia, "Iowan Old Style", "Palatino Linotype", serif;
@@ -170,6 +175,7 @@
   .choice.statement .go{ color:var(--blue); }
   .choice.notice .go{ color:var(--rust); }
   .choice.lease .go{ color:var(--teal); }
+  .choice.payments .go{ color:var(--plum); }
   .choice .go svg{ transition:transform .18s ease; }
   .choice:hover .go svg{ transform:translateX(3px); }
 
@@ -250,6 +256,21 @@
       <h2>Computer Lease Contract</h2>
       <p class="desc">Huurovereenkomst met koopoptie voor apparatuur, met automatisch berekende looptijd, incassodatum en het contractnummer bovenaan de eerste pagina.</p>
       <span class="go">Formulier openen
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </a>
+    <a class="choice payments" href="betalingen-boeken.html">
+      <span class="tab">Betalingen</span>
+      <div class="icon">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 3.5H14L18 7.5V20.5H6V3.5Z" stroke="#6B4A86" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M14 3.5V7.5H18" stroke="#6B4A86" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M9 14L11.2 16.2L15.2 12" stroke="#6B4A86" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2>Betalingen boeken</h2>
+      <p class="desc">Upload het betalingsrapport van de deurwaarder. Elke betaling wordt automatisch in Suave geboekt, met een lijst van wat wel en niet geboekt is.</p>
+      <span class="go">Openen
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
     </a>
