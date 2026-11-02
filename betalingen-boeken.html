@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Betalingen boeken</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --paper:#F3EEDE; --card:#FFFDF6; --ink:#232A3B; --ink-soft:#5B6178; --line:#DED2AE;
+    --gold:#96702A; --plum:#6B4A86; --plum-soft:#EEE7F3;
+    --ok:#2E7D6B; --ok-soft:#E3EFEA; --bad:#B0472E; --bad-soft:#F6E6E1;
+    --check:#1f6fa8; --check-soft:#E8F0F6; --wait:#E7DFC7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -12%, rgba(107,74,134,0.07), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 105% 112%, rgba(150,112,42,0.07), transparent 60%),
+      var(--paper);
+    color:var(--ink); min-height:100vh; padding:40px 20px 80px;
+  }
+  .wrap{ max-width:980px; margin:0 auto; }
+  .back{ display:inline-flex; align-items:center; gap:6px; color:var(--ink-soft); text-decoration:none; font-size:13.5px; font-weight:600; }
+  .back:hover{ color:var(--plum); }
+
+  .intro{ text-align:center; margin:22px 0 0; }
+  .intro h1{ font-family:Georgia, "Iowan Old Style", "Palatino Linotype", serif; font-size:33px; margin:0 0 12px; }
+  .intro p{ font-size:14.5px; color:var(--ink-soft); margin:0 auto; max-width:470px; line-height:1.6; }
+  .rule{ display:flex; align-items:center; justify-content:center; gap:10px; margin:26px 0 34px; }
+  .rule span{ height:1px; width:64px; background:var(--line); }
+  .rule i{ width:5px; height:5px; border-radius:50%; background:var(--plum); display:inline-block; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:3px 10px 10px 10px;
+         box-shadow:0 1px 3px rgba(35,42,59,0.06); padding:26px; position:relative; margin-top:22px; }
+  .tab{ position:absolute; top:-22px; left:0; height:30px; padding:0 15px; border-radius:6px 6px 0 0;
+        display:flex; align-items:center; font-size:11.5px; font-weight:700; color:#FFFDF6; background:var(--plum); }
+
+  .drop{ display:block; border:2px dashed var(--line); border-radius:8px; padding:26px; text-align:center; cursor:pointer; transition:border-color .15s, background .15s; }
+  .drop:hover, .drop.over{ border-color:var(--plum); background:var(--plum-soft); }
+  .drop input{ position:absolute; width:1px; height:1px; opacity:0; }
+  .drop strong{ font-family:Georgia, serif; font-size:18px; display:block; margin-bottom:4px; }
+  .drop span{ color:var(--ink-soft); font-size:13.5px; }
+
+  .settings{ display:grid; grid-template-columns:1fr auto; gap:16px 20px; align-items:center; margin-top:20px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
+  .field input{ width:100%; max-width:280px; font:inherit; padding:9px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); }
+  .check{ display:flex; gap:9px; align-items:center; font-size:14px; color:var(--ink-soft); }
+  .check input{ width:17px; height:17px; accent-color:var(--plum); }
+  .actions{ display:flex; gap:10px; }
+  button, .btn{ font:inherit; font-size:14px; font-weight:700; border-radius:6px; padding:10px 18px; cursor:pointer;
+                border:1px solid var(--plum); background:var(--plum); color:#FFFDF6; text-decoration:none; }
+  button.ghost{ background:transparent; color:var(--plum); }
+  button:disabled{ opacity:.4; cursor:not-allowed; }
+  :focus-visible{ outline:3px solid #9DC1DD; outline-offset:2px; }
+  .msg{ margin:16px 0 0; padding:12px 14px; border-radius:6px; font-size:14px; background:var(--bad-soft); color:var(--bad); font-weight:600; }
+
+  .summary{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:10px; }
+  .summary h2{ font-family:Georgia, serif; font-size:21px; margin:0; }
+  .summary .sub{ color:var(--ink-soft); font-size:14px; }
+  .bar{ display:flex; height:10px; border-radius:5px; overflow:hidden; background:var(--wait); margin:16px 0 18px; }
+  .bar i{ display:block; height:100%; transition:width .35s ease; }
+  .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .filters button{ background:var(--card); color:var(--ink); border-color:var(--line); font-weight:600; font-size:13px; padding:7px 12px; display:inline-flex; gap:7px; align-items:center; }
+  .filters button[aria-pressed="true"]{ border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
+  .filters small{ color:var(--ink-soft); font-weight:500; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; flex:none; }
+
+  .tablewrap{ overflow-x:auto; border:1px solid var(--line); border-radius:8px; }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; background:#fff; }
+  th{ text-align:left; color:var(--ink-soft); font-size:12px; font-weight:700; padding:10px 12px; border-bottom:1px solid var(--line); background:var(--card); white-space:nowrap; }
+  td{ padding:9px 12px; border-bottom:1px solid #EFE8D3; vertical-align:top; }
+  tr:last-child td{ border-bottom:0; }
+  td.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.nr{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .pill{ display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:12.5px; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .note{ color:var(--ink-soft); font-size:12.5px; margin-top:3px; }
+  .empty{ text-align:center; color:var(--ink-soft); padding:26px; }
+  tr.now td{ background:var(--plum-soft); }
+
+  @media (max-width:640px){
+    .settings{ grid-template-columns:1fr; }
+    .intro h1{ font-size:26px; }
+  }
+  @media (prefers-reduced-motion:reduce){ .bar i{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 8H3M3 8L7 4M3 8L7 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Terug naar overzicht
+  </a>
+
+  <div class="intro">
+    <h1>Betalingen boeken</h1>
+    <p>Upload het betalingsrapport van de deurwaarder. Elke betaling wordt in Suave opgezocht op dossiernummer en geboekt.</p>
+  </div>
+  <div class="rule"><span></span><i></i><span></span></div>
+
+  <section class="card">
+    <span class="tab">Rapport uploaden</span>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".xlsx,.xls">
+      <strong id="fileLabel">Kies het Excel-bestand of sleep het hierheen</strong>
+      <span id="fileHint">Kolommen nodig: Ons dossier en Saldo af te dragen</span>
+    </label>
+
+    <div class="settings">
+      <label class="check"><input type="checkbox" id="dry"> Testrun: bedrag invullen, maar niet op OK drukken</label>
+      <div class="actions">
+        <button type="button" class="ghost" id="stop" hidden>Stoppen</button>
+        <button type="button" id="start" disabled>Betalingen boeken</button>
+      </div>
+    </div>
+    <p class="msg" id="msg" role="alert" hidden></p>
+  </section>
+
+  <section class="card" id="results" hidden>
+    <span class="tab" style="background:var(--ink)">Resultaat</span>
+    <div class="summary">
+      <h2 id="count"></h2>
+      <span class="sub" id="state"></span>
+    </div>
+    <div class="bar" id="bar"></div>
+    <div class="filters" id="filters"></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Dossier</th><th>Debiteur</th><th>Datum betaling</th><th style="text-align:right">Bedrag</th><th>Status</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:18px; display:flex; justify-content:flex-end">
+      <button type="button" class="ghost" id="report" hidden>Rapport downloaden (Excel)</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- Instellingen ---------- */
+const WORKER_URL = "https://suave-booker.perezabimael01.workers.dev";   // adres van je Cloudflare Worker
+const COLS = { dossier: "Ons dossier", amount: "Saldo af te dragen", date: "Datum van betaling", name: "Debiteur", ref: "Uw referentie" };
+
+const STATUS = {
+  pending:   { label: "Wacht",                 group: null },
+  busy:      { label: "Bezig…",                group: null },
+  booked:    { label: "Geboekt",               group: "ok" },
+  test:      { label: "Test OK",               group: "ok" },
+  not_found: { label: "Niet gevonden",         group: "bad" },
+  failed:    { label: "Niet geboekt",          group: "bad" },
+  check:     { label: "Controleren",           group: "check" },
+};
+const GROUPS = [
+  { key: "ok",    label: "Geboekt",           color: "var(--ok)",    soft: "var(--ok-soft)" },
+  { key: "bad",   label: "Niet geboekt",      color: "var(--bad)",   soft: "var(--bad-soft)" },
+  { key: "check", label: "Controleren",       color: "var(--check)", soft: "var(--check-soft)" },
+];
+
+const $ = id => document.getElementById(id);
+let payments = [], fileName = "", running = false, stopAsked = false, filter = "all", dryRun = false, state = "";
+
+
+/* ---------- Excel inlezen ---------- */
+function fmtDossier(v) { return typeof v === "number" ? v.toFixed(5) : String(v).trim(); }
+function fmtAmount(v) {
+  if (typeof v === "number") return v.toFixed(2);
+  let s = String(v).replace(/AWG|€|\s/g, "");
+  s = s.includes(",") && s.includes(".") ? s.replace(/\./g, "").replace(",", ".") : s.replace(",", ".");
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n.toFixed(2);
+}
+function fmtDate(v) {
+  if (typeof v === "number") {
+    const d = XLSX.SSF.parse_date_code(v);
+    return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  }
+  return v == null ? "" : String(v);
+}
+
+async function readExcel(file) {
+  const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { raw: true, defval: null })
+    .map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim(), v])));   // kolomnamen zonder spaties
+  if (!rows.length) throw new Error("Het bestand is leeg.");
+  const cols = Object.keys(rows[0]);
+  const missing = [COLS.dossier, COLS.amount].filter(c => !cols.includes(c));
+  if (missing.length) throw new Error(`Kolom ${missing.join(" en ")} niet gevonden. Kolommen in dit bestand: ${cols.join(", ")}`);
+
+  const list = [];
+  for (const r of rows) {
+    if (r[COLS.dossier] == null || r[COLS.amount] == null) continue;      // slaat de TOTAAL-regel over
+    const amount = fmtAmount(r[COLS.amount]);
+    if (amount === null) continue;
+    const p = {
+      dossier: fmtDossier(r[COLS.dossier]), amount, date: fmtDate(r[COLS.date]),
+      name: r[COLS.name] || "", ref: r[COLS.ref] || "", status: "pending", note: "",
+    };
+    list.push(p);
+  }
+  if (!list.length) throw new Error("Geen betalingen gevonden in dit bestand.");
+  return list;
+}
+
+/* ---------- Bestand kiezen ---------- */
+async function pick(file) {
+  if (!file || running) return;
+  showMsg("");
+  try {
+    payments = await readExcel(file);
+    fileName = file.name; filter = "all"; state = "Klaar om te boeken.";
+    $("fileLabel").textContent = file.name;
+    $("fileHint").textContent = "Klik om een ander bestand te kiezen";
+    $("start").disabled = false;
+    $("report").hidden = true;
+    $("results").hidden = false;
+    render();
+  } catch (e) {
+    payments = [];
+    $("start").disabled = true;
+    $("results").hidden = true;
+    showMsg(e.message);
+  }
+}
+$("file").addEventListener("change", e => pick(e.target.files[0]));
+const drop = $("drop");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => pick(e.dataTransfer.files[0]));
+
+/* ---------- Worker ---------- */
+async function callWorker(path, body) {
+  const res = await fetch(WORKER_URL.replace(/\/$/, "") + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 403) throw Object.assign(new Error(data.error || "Geen toegang tot de worker."), { fatal: true });
+  if (!res.ok) throw new Error(data.error || `Fout ${res.status}`);
+  return data;
+}
+
+/* ---------- Boeken ---------- */
+$("start").addEventListener("click", async () => {
+  if (!payments.length || running) return;
+  dryRun = $("dry").checked;
+  const total = payments.reduce((s, p) => s + Number(p.amount), 0);
+  if (!dryRun && !confirm(`${payments.length} betalingen (AWG ${money(total)}) uit “${fileName}” boeken in Suave?`)) return;
+
+  showMsg("");
+  running = true; stopAsked = false;
+  $("start").disabled = true; $("stop").hidden = false; $("report").hidden = true; $("file").disabled = true;
+  // na Stoppen of een fout: alleen wat nog niet geboekt is opnieuw proberen
+  payments.forEach(p => { if (!["booked", "check"].includes(p.status)) { p.status = "pending"; p.note = ""; } });
+
+  try {
+    for (const p of payments) {
+      if (stopAsked) break;
+      if (p.status !== "pending") continue;
+      p.status = "busy"; state = `${dryRun ? "Testen" : "Boeken"}: ${p.dossier} ${p.name}`; render();
+      try {
+        const r = await callWorker("/book", { dossier: p.dossier, amount: p.amount, name: p.name, dryRun });
+        if (r.fatal) { p.status = "pending"; throw Object.assign(new Error(r.note), { fatal: true }); }
+        p.status = STATUS[r.status] ? r.status : "failed";
+        p.note = r.note || "";
+      } catch (e) {
+        if (e.fatal) throw e;
+        p.status = "failed"; p.note = e.message === "Failed to fetch" ? "Geen verbinding met de worker" : e.message;
+      }
+      render();
+    }
+    state = stopAsked ? "Gestopt. Druk nogmaals op Betalingen boeken om verder te gaan."
+          : dryRun ? "Testrun klaar. Er is niets geboekt." : "Klaar.";
+  } catch (e) {
+    state = "Gestopt.";
+    showMsg(e.message === "Failed to fetch" ? "Kan de worker niet bereiken. Controleer WORKER_URL." : e.message);
+  } finally {
+    running = false;
+    payments.forEach(p => { if (p.status === "busy") p.status = "pending"; });
+    $("start").disabled = false; $("stop").hidden = true; $("file").disabled = false; $("report").hidden = false;
+    render();
+  }
+});
+$("stop").addEventListener("click", () => { stopAsked = true; state = "Stoppen na deze betaling…"; render(); });
+window.addEventListener("beforeunload", e => { if (running) { e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- Weergave ---------- */
+function money(a) { return Number(a).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function showMsg(t) { $("msg").textContent = t; $("msg").hidden = !t; }
+const groupOf = p => GROUPS.find(g => g.key === STATUS[p.status].group);
+
+function render() {
+  const done = payments.filter(p => STATUS[p.status].group).length;
+  const total = payments.reduce((s, p) => s + Number(p.amount), 0);
+  $("count").textContent = `${done} van ${payments.length} verwerkt`;
+  $("state").textContent = `Totaal AWG ${money(total)}. ${state}`;
+
+  const stats = GROUPS.map(g => {
+    const rows = payments.filter(p => STATUS[p.status].group === g.key);
+    return { ...g, n: rows.length, sum: rows.reduce((s, p) => s + Number(p.amount), 0) };
+  });
+  $("bar").innerHTML = stats.map(s => `<i style="width:${100 * s.n / payments.length}%;background:${s.color}"></i>`).join("");
+
+  const fb = (key, label, n, color, sum) => `<button type="button" data-f="${key}" aria-pressed="${filter === key}">
+      ${color ? `<span class="dot" style="background:${color}"></span>` : ""}${label} ${n}
+      ${sum !== undefined ? `<small>AWG ${money(sum)}</small>` : ""}</button>`;
+  $("filters").innerHTML = fb("all", "Alles", payments.length) +
+    stats.filter(s => s.n || s.key === "ok" || s.key === "bad").map(s => fb(s.key, dryRun && s.key === "ok" ? "Test OK" : s.label, s.n, s.color, s.sum)).join("");
+  $("filters").querySelectorAll("button").forEach(b => b.onclick = () => { filter = b.dataset.f; render(); });
+
+  const shown = payments.filter(p => filter === "all" || STATUS[p.status].group === filter);
+  $("rows").innerHTML = shown.length ? shown.map(p => {
+    const g = groupOf(p);
+    const pill = g ? `background:${g.soft};color:${g.color}` : "background:var(--wait);color:var(--ink-soft)";
+    return `<tr class="${p.status === "busy" ? "now" : ""}">
+      <td class="nr">${esc(p.dossier)}</td>
+      <td>${esc(p.name)}${p.ref ? `<div class="note">${esc(p.ref)}</div>` : ""}</td>
+      <td class="nr">${esc(p.date)}</td>
+      <td class="num">${money(p.amount)}</td>
+      <td><span class="pill" style="${pill}">${STATUS[p.status].label}</span>${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}</td></tr>`;
+  }).join("") : `<tr><td colspan="5" class="empty">Geen betalingen in deze lijst.</td></tr>`;
+}
+
+/* ---------- Rapport ---------- */
+$("report").addEventListener("click", () => {
+  const wb = XLSX.utils.book_new();
+  const sheets = [["Geboekt", ["booked", "test"]], ["Niet geboekt", ["not_found", "failed", "pending"]],
+                  ["Controleren", ["check"]]];
+  for (const [title, statuses] of sheets) {
+    const rows = payments.filter(p => statuses.includes(p.status));
+    if (!rows.length && title === "Controleren") continue;
+    const data = [["Dossier", "Uw referentie", "Debiteur", "Datum van betaling", "Bedrag", "Status", "Opmerking"],
+      ...rows.map(p => [p.dossier, p.ref, p.name, p.date, Number(p.amount), STATUS[p.status].label, p.note]),
+      [], ["Totaal", "", "", "", rows.reduce((s, p) => s + Number(p.amount), 0)]];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws["!cols"] = [12, 22, 34, 18, 12, 18, 50].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, title);
+  }
+  XLSX.writeFile(wb, `${fileName.replace(/\.xlsx?$/i, "")} - boekingsrapport.xlsx`);
+});
+</script>
+<script src="help-chat.js"></script>
+</body>
+</html>
