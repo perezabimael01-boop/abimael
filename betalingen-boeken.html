@@ -130,6 +130,10 @@
       <p class="msg" id="codeMsg" role="alert" hidden></p>
     </div>
     <p class="msg" id="msg" role="alert" hidden></p>
+    <div id="shotbox" hidden style="margin-top:14px">
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 6px">Dit ziet de worker in Suave<span id="shoturl"></span>:</p>
+      <img id="shot" alt="Schermafbeelding van Suave zoals de worker het ziet" style="max-width:100%;border:1px solid var(--line);border-radius:6px">
+    </div>
   </section>
 
   <section class="card" id="results" hidden>
@@ -263,7 +267,7 @@ $("start").addEventListener("click", async () => {
   const total = payments.reduce((s, p) => s + Number(p.amount), 0);
   if (!dryRun && !confirm(`${payments.length} betalingen (AWG ${money(total)}) uit “${fileName}” boeken in Suave?`)) return;
 
-  showMsg("");
+  showMsg(""); $("shotbox").hidden = true;
   running = true; stopAsked = false;
   $("start").disabled = true; $("stop").hidden = false; $("report").hidden = true; $("file").disabled = true;
   // na Stoppen of een fout: alleen wat nog niet geboekt is opnieuw proberen
@@ -297,7 +301,7 @@ $("start").addEventListener("click", async () => {
         if (!(await handleCode())) break;
         i--; continue;
       }
-      if (r.fatal) { p.status = "pending"; throw Object.assign(new Error(r.note), { fatal: true }); }
+      if (r.fatal) { p.status = "pending"; throw Object.assign(new Error(r.note), { fatal: true, shot: r.shot, url: r.url }); }
       p.status = STATUS[r.status] ? r.status : "failed";
       p.note = r.note || "";
       render();
@@ -307,6 +311,11 @@ $("start").addEventListener("click", async () => {
   } catch (e) {
     state = "Gestopt.";
     showMsg(e.message === "Failed to fetch" ? "Kan de worker niet bereiken. Controleer WORKER_URL." : e.message);
+    if (e.shot) {
+      $("shot").src = "data:image/jpeg;base64," + e.shot;
+      $("shoturl").textContent = e.url ? ` (${e.url})` : "";
+      $("shotbox").hidden = false;
+    }
   } finally {
     running = false;
     $("codebox").hidden = true; codeResolver = null;
