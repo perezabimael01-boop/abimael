@@ -85,6 +85,9 @@
   .note{ color:var(--ink-soft); font-size:12.5px; margin-top:3px; }
   .empty{ text-align:center; color:var(--ink-soft); padding:26px; }
   tr.now td{ background:var(--plum-soft); }
+  .fotobtn{ font-size:12px; font-weight:600; padding:3px 9px; margin-left:6px; background:transparent; color:var(--plum); border-color:var(--plum); border-radius:20px; }
+  tr.foto td{ background:var(--card); padding:12px; }
+  tr.foto img{ max-width:min(100%, 560px); border:1px solid var(--line); border-radius:6px; display:block; }
 
   @media (max-width:640px){
     .settings{ grid-template-columns:1fr; }
@@ -304,6 +307,7 @@ $("start").addEventListener("click", async () => {
       if (r.fatal) { p.status = "pending"; throw Object.assign(new Error(r.note), { fatal: true, shot: r.shot, url: r.url }); }
       p.status = STATUS[r.status] ? r.status : "failed";
       p.note = r.note || "";
+      p.shot = r.shot || "";
       render();
     }
     state = stopAsked ? "Gestopt. Druk nogmaals op Betalingen boeken om verder te gaan."
@@ -400,9 +404,18 @@ function render() {
       <td>${esc(p.name)}${p.ref ? `<div class="note">${esc(p.ref)}</div>` : ""}</td>
       <td class="nr">${esc(p.date)}</td>
       <td class="num">${money(p.amount)}</td>
-      <td><span class="pill" style="${pill}">${STATUS[p.status].label}</span>${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}</td></tr>`;
+      <td><span class="pill" style="${pill}">${STATUS[p.status].label}</span>${p.shot ? `<button type="button" class="fotobtn" data-i="${payments.indexOf(p)}" aria-expanded="${!!p.open}">${p.open ? "Foto sluiten" : "Foto"}</button>` : ""}${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}</td></tr>
+      ${p.shot && p.open ? `<tr class="foto"><td colspan="5"><img src="data:image/jpeg;base64,${p.shot}" alt="Popup in Suave voor ${esc(p.dossier)}, vlak voor OK"></td></tr>` : ""}`;
   }).join("") : `<tr><td colspan="5" class="empty">Geen betalingen in deze lijst.</td></tr>`;
 }
+
+$("rows").addEventListener("click", e => {
+  const b = e.target.closest(".fotobtn");
+  if (!b) return;
+  const p = payments[Number(b.dataset.i)];
+  p.open = !p.open;
+  render();
+});
 
 /* ---------- Rapport ---------- */
 $("report").addEventListener("click", () => {
